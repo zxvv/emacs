@@ -64,37 +64,13 @@ mode, it should bind this variable to non-nil around the call.
 
 The non-nil value should be a list of the form:
 
-   (FIRST-COLUMN (START . END) PREVIOUS-CHUNKS)
+   (FIRST-COLUMN ...REST)
 
 FIRST-COLUMN is the column the indentation engine of the sub-mode
 should use for top-level language constructs inside the code
 chunk (instead of 0).
 
-START and END specify the region of the code chunk.  END can be
-nil, which stands for the value of `point-max'.  The function
-`prog-widen' uses this to restore restrictions imposed by the
-sub-mode's indentation engine.
-
-PREVIOUS-CHUNKS, if non-nil, provides the indentation engine of
-the sub-mode with the virtual context of the code chunk.  Valid
-values are:
-
- - A string containing text which the indentation engine can
-   consider as standing in front of the code chunk.  To cache the
-   string's calculated syntactic information for repeated calls
-   with the same string, the sub-mode can add text-properties to
-   the string.
-
-   A typical use case is for grammars with code chunks which are
-   to be indented like function bodies -- the string would contain
-   the corresponding function preamble.
-
- - A function, to be called with the start position of the current
-   chunk.  It should return either the region of the previous chunk
-   as (PREV-START . PREV-END), or nil if there is no previous chunk.
-
-   A typical use case are literate programming sources -- the
-   function would successively return the previous code chunks.")
+REST is currently unused, but can be defined in future versions.")
 
 (defun prog-indent-sexp (&optional defun)
   "Indent the expression after point.

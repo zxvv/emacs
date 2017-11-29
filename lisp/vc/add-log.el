@@ -1133,6 +1133,8 @@ identifiers followed by `:' or `='.  See variables
 Has a preference of looking backwards."
   (condition-case nil
       (save-excursion
+        (save-restriction
+          (widen)
 	(if add-log-current-defun-function
 	    (funcall add-log-current-defun-function)
 	  ;; If all else fails, try heuristics
@@ -1147,7 +1149,7 @@ Has a preference of looking backwards."
 	      (when (string-match "\\([^ \t\n\r\f].*[^ \t\n\r\f]\\)"
 				  result)
 		(setq result (match-string-no-properties 1 result)))
-	      result))))
+	      result)))))
     (error nil)))
 
 (defvar change-log-get-method-definition-md)
