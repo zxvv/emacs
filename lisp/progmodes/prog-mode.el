@@ -89,23 +89,6 @@ instead."
   "Return the indentation column normally used for top-level constructs."
   (or (car prog-indentation-context) 0))
 
-(defun prog-widen ()
-  "Remove restrictions (narrowing) from current code chunk or buffer.
-This function should be used instead of `widen' in any function used
-by the indentation engine to make it respect the value of
-`prog-indentation-context'.
-
-This function (like `widen') is useful inside a
-`save-restriction' to make the indentation correctly work when
-narrowing is in effect."
-  (let ((chunk (cadr prog-indentation-context)))
-    (if chunk
-        ;; No call to `widen' is necessary here, as narrow-to-region
-        ;; changes (not just narrows) the existing restrictions
-        (narrow-to-region (car chunk) (or (cdr chunk) (point-max)))
-      (widen))))
-
-
 (defvar-local prettify-symbols-alist nil
   "Alist of symbol prettifications.
 Each element looks like (SYMBOL . CHARACTER), where the symbol
