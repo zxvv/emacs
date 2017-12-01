@@ -49,28 +49,10 @@
     map)
   "Keymap used for programming modes.")
 
-(defvar prog-indentation-context nil
-  "When non-nil, provides context for indenting embedded code chunks.
-
-There are languages where part of the code is actually written in
-a sub language, e.g., a Yacc/Bison or ANTLR grammar also consists
-of plain C code.  This variable enables the major mode of the
-main language to use the indentation engine of the sub-mode for
-lines in code chunks written in the sub-mode's language.
-
-When a major mode of such a main language decides to delegate the
-indentation of a line/region to the indentation engine of the sub
-mode, it should bind this variable to non-nil around the call.
-
-The non-nil value should be a list of the form:
-
-   (FIRST-COLUMN ...REST)
-
-FIRST-COLUMN is the column the indentation engine of the sub-mode
-should use for top-level language constructs inside the code
-chunk (instead of 0).
-
-REST is currently unused, but can be defined in future versions.")
+(defvar prog-first-column 0
+  "The column that should be used for top-level constructs.
+Indentation functions that are supposed to work correctly in
+embedded code chunks should use this value instead of 0.")
 
 (defun prog-indent-sexp (&optional defun)
   "Indent the expression after point.
@@ -84,10 +66,6 @@ instead."
     (let ((start (point))
 	  (end (progn (forward-sexp 1) (point))))
       (indent-region start end nil))))
-
-(defun prog-first-column ()
-  "Return the indentation column normally used for top-level constructs."
-  (or (car prog-indentation-context) 0))
 
 (defvar-local prettify-symbols-alist nil
   "Alist of symbol prettifications.

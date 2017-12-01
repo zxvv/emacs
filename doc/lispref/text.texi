@@ -2396,41 +2396,30 @@ text at point (@pxref{Completion in Buffers}).
 syntax belongs to a different major mode.  Examples include
 @dfn{literate programming} source files that combine documentation and
 snippets of source code, Yacc/Bison programs that include snippets of
-plain C code, etc.  To correctly indent the embedded chunks, the major
-mode needs to delegate the indentation to another mode's indentation
-engine (e.g., call @code{c-indent-defun} for C code or
-@code{python-indent-line} for Python), while providing it with some
-context to guide the indentation.  The following facilities support
-such multi-mode indentation.
+plain C code, web programming HTML templates, etc.  To correctly
+indent the embedded chunks, the major mode needs to delegate the
+indentation to another mode's indentation engine (e.g., call
+@code{c-indent-defun} for C code or @code{python-indent-line} for
+Python), while providing it with some guidance.  Same for syntax
+highlighting and similar features.  Major modes that are supposed to
+work correctly in embedded contexts, should adhere to the following
+rules:
 
-@defvar prog-indentation-context
-This variable, when non-@code{nil}, holds the indentation context for
-the sub-mode's indentation engine provided by the superior major mode.
-The value should be a list of the form @code{(@var{first-column}
-@code{...rest})}.  The members of the list have the following meaning:
+@itemize @bullet
+@item
+@code{indent-line-function},
+@code{beginning-of-defun-function},
+@code{font-lock-keywords} and
+@code{syntax-propertize-function} should not call @code{widen}
+in their implementations.  They should obey the narrowing bounds set
+by their caller to the best of their ability.
 
-@table @var
-@item first-column
-The column to be used for top-level constructs.  This replaces the
-default value of the top-level column used by the sub-mode, usually
-zero.
-@item rest
-Reserved for future use.  The intent is to provide the sub-mode's
-indentation engine with a virtual context of the code chunk.  Working
-patches that use this in a significant fashion are welcome.
-@end table
-@end defvar
-
-The following convenience functions should be used by major mode's
-indentation engine in support of invocations as sub-modes of another
-major mode.
-
-@defun prog-first-column
-Call this function instead of using a literal value (usually, zero) of
-the column number for indenting top-level program constructs.  The
-function's value is the column number to use for top-level constructs.
-When no superior mode is in effect, this function returns zero.
-@end defun
+@item
+Indentation code should use the value of @code{prog-first-column} as
+the indentation offset.  In practice, it usually means to simply
+indent the top-level constructs to this column, if indentation of
+their contents is relative.
+@end itemize
 
 
 @node Region Indent
