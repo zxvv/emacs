@@ -2143,7 +2143,7 @@ indentation is aligned to that column."
 
           ((js--continued-expression-p)
            (+ js-indent-level js-expr-indent-offset))
-          (t (prog-first-column)))))
+          (t prog-first-column))))
 
 ;;; JSX Indentation
 

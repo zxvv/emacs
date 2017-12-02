@@ -1457,7 +1457,7 @@ in order to figure out the indentation of some other (further down) point."
   ;; Start the file at column 0.
   (save-excursion
     (forward-comment (- (point)))
-    (if (bobp) (prog-first-column))))
+    (if (bobp) prog-first-column)))
 
 (defun smie-indent-close ()
   ;; Align close paren with opening paren.

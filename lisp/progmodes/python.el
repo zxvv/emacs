@@ -287,9 +287,8 @@
 ;;; 24.x Compat
 
 
-(unless (fboundp 'prog-first-column)
-  (defun prog-first-column ()
-    0))
+(unless (boundp 'prog-first-column)
+  (defvar prog-first-column 0))
 
 
 ;;; Bindings
@@ -1026,7 +1025,7 @@ happening for :at-dedenter-block-start context since the
 possibilities can be narrowed to specific indentation points."
     (save-excursion
       (pcase (python-indent-context)
-        (`(:no-indent . ,_) (prog-first-column)) ; usually 0
+        (`(:no-indent . ,_) prog-first-column) ; usually 0
         (`(,(or :after-line
                 :after-comment
                 :inside-string
@@ -1064,7 +1063,7 @@ possibilities can be narrowed to specific indentation points."
          (let ((opening-block-start-points
                 (python-info-dedenter-opening-block-positions)))
            (if (not opening-block-start-points)
-               (prog-first-column) ; if not found default to first column
+               prog-first-column ; if not found default to first column
              (mapcar (lambda (pos)
                        (save-excursion
                          (goto-char pos)
@@ -1082,7 +1081,7 @@ integers.  Levels are returned in ascending order, and in the
 case INDENTATION is a list, this order is enforced."
   (if (listp indentation)
       (sort (copy-sequence indentation) #'<)
-    (nconc (number-sequence (prog-first-column) (1- indentation)
+    (nconc (number-sequence prog-first-column (1- indentation)
                             python-indent-offset)
            (list indentation))))
 
@@ -1107,7 +1106,7 @@ minimum."
         (python-indent--previous-level levels (current-indentation))
       (if levels
           (apply #'max levels)
-        (prog-first-column)))))
+        prog-first-column))))
 
 (defun python-indent-line (&optional previous)
   "Internal implementation of `python-indent-line-function'.
