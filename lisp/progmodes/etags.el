@@ -2185,26 +2185,31 @@ for \\[find-tag] (which see)."
 
 (defvar etags--project-tags-file nil)
 (defvar etags--project-tags-root nil)
+(defvar etags--project-confirmed-roots nil)
 
 (defun etags--maybe-use-project-tags ()
-  (let (proj)
+  (let (proj root)
     (when (and etags--project-tags-root
                (not (file-in-directory-p default-directory
                                          etags--project-tags-root)))
       (etags--project-tags-cleanup))
     (when (and (not (or tags-file-name
                         tags-table-list))
-               (setq proj (project-current)))
-      (etags--project-tags-generate proj)
+               (setq proj (project-current))
+               (setq root (cl-find default-directory
+                                   (project-roots proj)
+                                   :test #'file-in-directory-p))
+               (or (member root etags--project-confirmed-roots)
+                   (yes-or-no-p
+                    (format "Generate tags table for %s automatically? " root))))
+      (cl-pushnew root etags--project-confirmed-roots)
+      (etags--project-tags-generate proj root)
       ;; Invalidate the scanned tags after any change is written to disk.
       (add-hook 'after-save-hook #'etags--project-tags-cleanup)
       (visit-tags-table etags--project-tags-file))))
 
-(defun etags--project-tags-generate (proj)
-  (let* ((root (cl-find default-directory
-                        (project-roots proj)
-                        :test #'file-in-directory-p))
-         (default-directory root)
+(defun etags--project-tags-generate (proj root)
+  (let* ((default-directory root)
          (files (all-completions "" (project-file-completion-table proj (list root))))
          (etags-command (executable-find "etags"))
          ;; FIXME: List all extensions, or wait for etags fix.
