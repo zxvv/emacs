@@ -2108,7 +2108,9 @@ for \\[find-tag] (which see)."
   "Tag order used in `xref-backend-definitions' to look for definitions.")
 
 ;;;###autoload
-(defun etags--xref-backend () 'etags)
+(defun etags--xref-backend ()
+  (etags--maybe-use-project-tags)
+  'etags)
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql etags)))
   (find-tag--default))
@@ -2179,6 +2181,58 @@ for \\[find-tag] (which see)."
     (nth 1 tag-info)))
 
 
+;;; Simple tags generation, with automatic invalidation
+
+(defvar etags--project-tags-file nil)
+(defvar etags--project-tags-root nil)
+
+(defun etags--maybe-use-project-tags ()
+  (let (proj)
+    (when (and etags--project-tags-root
+               (not (file-in-directory-p default-directory
+                                         etags--project-tags-root)))
+      (etags--project-tags-cleanup))
+    (when (and (not (or tags-file-name
+                        tags-table-list))
+               (setq proj (project-current)))
+      (etags--project-tags-generate proj)
+      ;; Invalidate the scanned tags after any change is written to disk.
+      (add-hook 'after-save-hook #'etags--project-tags-cleanup)
+      (visit-tags-table etags--project-tags-file))))
+
+(defun etags--project-tags-generate (proj)
+  (let* ((root (cl-find default-directory
+                        (project-roots proj)
+                        :test #'file-in-directory-p))
+         (default-directory root)
+         (files (all-completions "" (project-file-completion-table proj (list root))))
+         (etags-command (executable-find "etags"))
+         ;; FIXME: List all extensions, or wait for etags fix.
+         ;; http://lists.gnu.org/archive/html/emacs-devel/2018-01/msg00323.html
+         (extensions '("rb" "js" "py" "pl" "el" "c" "cpp" "cc" "h" "hh" "hpp"
+                       "java" "go" "cl" "lisp" "prolog" "php" "erl" "hrl"
+                       "F" "f" "f90" "for" "cs" "a" "asm" "ads" "adb" "ada"))
+         (file-regexp (format "\\.%s\\'" (regexp-opt extensions))))
+    (setq etags--project-tags-file (make-temp-file "emacs-project-tags-")
+          etags--project-tags-root root)
+    (with-temp-buffer
+      (mapc (lambda (f)
+              (when (string-match-p file-regexp f)
+                (insert f "\n")))
+            files)
+      (shell-command-on-region (point-min) (point-max)
+                               (format "%s - -o %s" etags-command etags--project-tags-file)
+                               nil nil "*etags-project-tags-errors*" t))))
+
+(defun etags--project-tags-cleanup ()
+  (when etags--project-tags-file
+    (delete-file etags--project-tags-file)
+    (setq tags-file-name nil
+          tags-table-list nil
+          etags--project-tags-file nil
+          etags--project-tags-root nil))
+  (remove-hook 'after-save-hook #'etags--project-tags-cleanup))
+
 (provide 'etags)
 
 ;;; etags.el ends here
