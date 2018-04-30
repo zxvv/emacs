@@ -335,21 +335,26 @@ A UPattern can have the following forms:
 
 @item '@var{val}
 Matches if the value being matched is @code{equal} to @var{val}.
+
 @item @var{atom}
 Matches any @var{atom}, which can be a keyword, a number, or a string.
 (These are self-quoting, so this kind of UPattern is actually a
 shorthand for @code{'@var{atom}}.)  Note that a string or a float
 matches any string or float with the same contents/value.
+
 @item _
 Matches any value.  This is known as @dfn{don't care} or @dfn{wildcard}.
+
 @item @var{symbol}
 Matches any value, and additionally let-binds @var{symbol} to the
 value it matched, so that you can later refer to it, either in the
 @var{body-forms} or also later in the pattern.
+
 @item (pred @var{predfun})
 Matches if the predicate function @var{predfun} returns non-@code{nil}
 when called with the value being matched as its argument.
 @var{predfun} can be one of the possible forms described below.
+
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
 allows you to include in a UPattern boolean conditions that refer to
@@ -358,6 +363,7 @@ previous UPatterns.  Typically used inside an @code{and} UPattern, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
 @code{x} to that number.
+
 @item (let @var{upattern} @var{expression})
 Matches if the specified @var{expression} matches the specified
 @var{upattern}.  This allows matching a pattern against the value of
@@ -366,17 +372,20 @@ first argument to @code{pcase}.  (It is called @code{let} because
 @var{upattern} can bind symbols to values using the @var{symbol}
 UPattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
+
 @item (app @var{function} @var{upattern})
 Matches if @var{function} applied to the value being matched returns a
 value that matches @var{upattern}.  This is like the @code{pred}
 UPattern, except that it tests the result against @var{upattern},
 rather than against a boolean truth value.  The @var{function} call can
 use one of the forms described below.
+
 @item (or @var{upattern1} @var{upattern2}@dots{})
 Matches if one the argument UPatterns matches.  As soon as the first
 matching UPattern is found, the rest are not tested.  For this reason,
 if any of the UPatterns let-bind symbols to the matched value, they
 should all bind the same symbols.
+
 @item (and @var{upattern1} @var{upattern2}@dots{})
 Matches if all the argument UPatterns match.
 @end table
