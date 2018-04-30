@@ -434,18 +434,22 @@ Backquoted patterns have the form @code{`@var{qpattern}} where
 @var{qpattern} can have the following forms:
 
 @table @code
+
 @item (@var{qpattern1} . @var{qpattern2})
 Matches if the value being matched is a cons cell whose @code{car}
 matches @var{qpattern1} and whose @code{cdr} matches @var{qpattern2}.
 This readily generalizes to backquoted lists as in
 @w{@code{(@var{qpattern1} @var{qpattern2} @dots{})}}.
+
 @item [@var{qpattern1} @var{qpattern2} @dots{} @var{qpatternm}]
 Matches if the value being matched is a vector of length @var{m} whose
 @code{0}..@code{(@var{m}-1)}th elements match @var{qpattern1},
 @var{qpattern2} @dots{} @var{qpatternm}, respectively.
+
 @item @var{atom}
 Matches if corresponding element of the value being matched is
 @code{equal} to the specified @var{atom}.
+
 @item ,@var{upattern}
 Matches if the corresponding element of the value being matched
 matches the specified @var{upattern}.
