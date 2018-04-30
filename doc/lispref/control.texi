@@ -336,11 +336,12 @@ A UPattern can have the following forms:
 @item '@var{val}
 Matches if the value being matched is @code{equal} to @var{val}.
 
-@item @var{atom}
-Matches any @var{atom}, which can be a keyword, a number, or a string.
-(These are self-quoting, so this kind of UPattern is actually a
-shorthand for @code{'@var{atom}}.)  Note that a string or a float
-matches any string or float with the same contents/value.
+@item @var{keyword}
+@itemx @var{number}
+@itemx @var{string}
+Matches if the value is @code{equal} to the literal.
+This is a special case of @code{'@var{val}}, above,
+possible because these types are self-quoting.
 
 @item _
 Matches any value.  This is known as @dfn{don't care} or @dfn{wildcard}.
