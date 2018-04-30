@@ -325,6 +325,8 @@ The @var{pattern} part of a clause can be of one of two types:
 @dfn{UPattern}, which is not quoted.  UPatterns are simpler, so we
 describe them first.
 
+@end defmac
+
 Note: In the description of the patterns below, we use ``the value
 being matched'' to refer to the value of the @var{expression} that is
 the first argument of @code{pcase}.
@@ -455,8 +457,6 @@ QPatterns are implemented on top of UPatterns using
 in many cases lead to a more readable code.
 @c FIXME: There should be an example here showing how a 'pcase' that
 @c uses QPatterns can be rewritten using UPatterns.
-
-@end defmac
 
 Here is an example of using @code{pcase} to implement a simple
 interpreter for a little expression language (note that this example
