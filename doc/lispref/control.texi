@@ -382,7 +382,7 @@ A UPattern can have the following forms:
 Matches if the value being matched is @code{equal} to @var{val}.
 
 @item @var{keyword}
-@itemx @var{number}
+@itemx @var{integer}
 @itemx @var{string}
 Matches if the value is @code{equal} to the literal.
 This is a special case of @code{'@var{val}}, above,
