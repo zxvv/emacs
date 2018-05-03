@@ -455,7 +455,7 @@ argument that is the value being matched.
 @end table
 
 @noindent
-Here's an illustrative example of using UPatterns:
+Here's an example of using UPatterns:
 
 @c FIXME: This example should use every one of the UPatterns described
 @c above at least once.
