@@ -481,7 +481,7 @@ Control Structures
 
 Conditionals
 
-* Pattern matching case statement::  How to use @code{pcase}.
+* Pattern-Matching Conditional::  How to use @code{pcase}.
 
 Nonlocal Exits
 

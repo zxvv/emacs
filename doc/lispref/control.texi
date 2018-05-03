@@ -289,11 +289,11 @@ For example:
 @end example
 
 @menu
-* Pattern matching case statement::
+* Pattern-Matching Conditional::
 @end menu
 
-@node Pattern matching case statement
-@subsection Pattern matching case statement
+@node Pattern-Matching Conditional
+@subsection Pattern-Matching Conditional
 @cindex pcase
 @cindex pattern matching
 
