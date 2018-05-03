@@ -454,6 +454,7 @@ is called with these @var{n} arguments and an additional @var{n}+1-th
 argument that is the value being matched.
 @end table
 
+@noindent
 Here's an illustrative example of using UPatterns:
 
 @c FIXME: This example should use every one of the UPatterns described
