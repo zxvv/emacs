@@ -440,13 +440,15 @@ The function calls used in the @code{pred} and @code{app} UPatterns
 can have one of the following forms:
 
 @table @asis
-@item function symbol, like @code{integerp}
+@item function name (a symbol), e.g., @code{integerp}
 In this case, the named function is applied to the value being
 matched.
-@item lambda-function @code{(lambda (@var{arg}) @var{body})}
-In this case, the lambda-function is called with one argument, the
+
+@item lambda expression, e.g., @code{(lambda (n) (= 42 n))}
+In this case, the lambda expression is called with one argument, the
 value being matched.
-@item @code{(@var{func} @var{args}@dots{})}
+
+@item function call with @var{n} args, e.g., @code{(= 42)}
 This is a function call with @var{n} specified arguments; the function
 is called with these @var{n} arguments and an additional @var{n}+1-th
 argument that is the value being matched.
