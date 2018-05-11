@@ -108,8 +108,11 @@
 
 ;;;###autoload
 (defmacro pcase (exp &rest cases)
-  "Evaluate EXP and attempt to match it against structural patterns.
+  "Evaluate EXP to get EXPVAL; try passing control to one of CASES.
 CASES is a list of elements of the form (PATTERN CODE...).
+For the first CASE whose PATTERN \"matches\" EXPVAL,
+evaluate its CODE..., and return the value of the last form.
+If no CASE has a PATTERN that matches, return nil.
 
 A structural PATTERN describes a template that identifies a class
 of values.  For example, the pattern \\=`(,foo ,bar) matches any
