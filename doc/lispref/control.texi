@@ -370,15 +370,15 @@ extend the set of builtin @var{pattern} forms.
 
 The builtin set includes two broad categories of @var{pattern}
 forms: ``unquoted'' and ``quoted'', also known as
-@dfn{UPattern} and @dfn{QPattern}, respectively.
-A QPattern begins with a backquote and often builds
-upon one or more simpler UPatterns.
+@dfn{U-pattern} and @dfn{Q-pattern}, respectively.
+A Q-pattern begins with a backquote and often builds
+upon one or more simpler U-patterns.
 
 Note: In the description of the patterns below, we use ``the value
 being matched'' to refer to the value of the @var{expression} that is
 the first argument of @code{pcase}.
 
-A UPattern can have the following forms:
+A U-pattern can have the following forms:
 
 @table @code
 
@@ -407,9 +407,9 @@ when called with the value being matched as its argument.
 
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
-allows you to include in a UPattern boolean conditions that refer to
+allows you to include in a U-pattern boolean conditions that refer to
 symbols bound to values (including the value being matched) by
-previous UPatterns.  Typically used inside an @code{and} UPattern, see
+previous U-patterns.  Typically used inside an @code{and} U-pattern, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
 @code{x} to that number.
@@ -420,27 +420,27 @@ Matches if the specified @var{expression} matches the specified
 an @emph{arbitrary} expression, not just the expression that is the
 first argument to @code{pcase}.  (It is called @code{let} because
 @var{upattern} can bind symbols to values using the @var{symbol}
-UPattern.  For example:
+U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 
 @item (app @var{function} @var{upattern})
 Matches if @var{function} applied to the value being matched returns a
 value that matches @var{upattern}.  This is like the @code{pred}
-UPattern, except that it tests the result against @var{upattern},
+U-pattern, except that it tests the result against @var{upattern},
 rather than against a boolean truth value.  The @var{function} call can
 use one of the forms described below.
 
 @item (or @var{upattern1} @var{upattern2}@dots{})
-Matches if one the argument UPatterns matches.  As soon as the first
-matching UPattern is found, the rest are not tested.  For this reason,
-if any of the UPatterns let-bind symbols to the matched value, they
+Matches if one the argument U-patterns matches.  As soon as the first
+matching U-pattern is found, the rest are not tested.  For this reason,
+if any of the U-patterns let-bind symbols to the matched value, they
 should all bind the same symbols.
 
 @item (and @var{upattern1} @var{upattern2}@dots{})
-Matches if all the argument UPatterns match.
+Matches if all the argument U-patterns match.
 @end table
 
-The function calls used in the @code{pred} and @code{app} UPatterns
+The function calls used in the @code{pred} and @code{app} U-patterns
 can have one of the following forms:
 
 @table @asis
@@ -459,9 +459,9 @@ argument that is the value being matched.
 @end table
 
 @noindent
-Here's an example of using UPatterns:
+Here's an example of using U-patterns:
 
-@c FIXME: This example should use every one of the UPatterns described
+@c FIXME: This example should use every one of the U-patterns described
 @c above at least once.
 @example
 (pcase (get-return-code x)
@@ -505,12 +505,12 @@ Matches if the corresponding element of the value being matched
 matches the specified @var{upattern}.
 @end table
 
-Note that uses of QPatterns can be expressed using only UPatterns, as
-QPatterns are implemented on top of UPatterns using
-@code{pcase-defmacro}, described below.  However, using QPatterns will
+Note that uses of Q-patterns can be expressed using only U-patterns, as
+Q-patterns are implemented on top of U-patterns using
+@code{pcase-defmacro}, described below.  However, using Q-patterns will
 in many cases lead to a more readable code.
 @c FIXME: There should be an example here showing how a 'pcase' that
-@c uses QPatterns can be rewritten using UPatterns.
+@c uses Q-patterns can be rewritten using U-patterns.
 
 Here is an example of using @code{pcase} to implement a simple
 interpreter for a little expression language (note that this example
@@ -549,14 +549,14 @@ evaluation results:
 (evaluate '(sub 1 2) nil)                 ;=> error
 @end example
 
-Additional UPatterns can be defined using the @code{pcase-defmacro}
+Additional U-patterns can be defined using the @code{pcase-defmacro}
 macro.
 
 @defmac pcase-defmacro name args &rest body
-Define a new kind of UPattern for @code{pcase}.  The new UPattern will
+Define a new kind of U-pattern for @code{pcase}.  The new U-pattern will
 be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
-should describe how to rewrite the UPattern @var{name} into some other
-UPattern.  The rewriting will be the result of evaluating @var{body}
+should describe how to rewrite the U-pattern @var{name} into some other
+U-pattern.  The rewriting will be the result of evaluating @var{body}
 in an environment where @var{args} are bound to @var{actual-args}.
 @end defmac
 
