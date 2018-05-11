@@ -161,7 +161,7 @@ The FUN argument in the `app' pattern may have the following forms:
 So a FUN of the form SYMBOL is equivalent to (FUN).
 FUN can refer to variables bound earlier in the pattern.
 
-See Info node `(elisp) Pattern matching case statement' in the
+See Info node `(elisp) Pattern-Matching Conditional' in the
 Emacs Lisp manual for more information and examples."
   (declare (indent 1) (debug (form &rest (pcase-PAT body))))
   ;; We want to use a weak hash table as a cache, but the key will unavoidably
