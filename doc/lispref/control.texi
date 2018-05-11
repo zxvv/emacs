@@ -375,8 +375,8 @@ forms: ``unquoted'' and ``quoted'', also known as
 A Q-pattern begins with a backquote and often builds
 upon one or more simpler U-patterns.
 
-Note: In the following description, the ``value being matched''
-refers to the result of evaluating @var{expression}
+Note: In the following description, @var{expval} stands
+for the result of evaluating @var{expression}
 (first argument to @code{pcase}).
 
 A U-pattern can have the following forms:
@@ -384,7 +384,7 @@ A U-pattern can have the following forms:
 @table @code
 
 @item '@var{val}
-Matches if the value being matched is @code{equal} to @var{val}.
+Matches if @var{expval} is @code{equal} to @var{val}.
 
 @item @var{keyword}
 @itemx @var{integer}
@@ -403,13 +403,13 @@ value it matched, so that you can later refer to it, either in the
 
 @item (pred @var{predfun})
 Matches if the predicate function @var{predfun} returns non-@code{nil}
-when called with the value being matched as its argument.
+when called with @var{expval} as its argument.
 @var{predfun} can be one of the possible forms described below.
 
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
 allows you to include in a U-pattern boolean conditions that refer to
-symbols bound to values (including the value being matched) by
+symbols bound to values (including @var{expval}) by
 previous U-patterns.  Typically used inside an @code{and} U-pattern, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
@@ -425,7 +425,7 @@ U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 
 @item (app @var{function} @var{upattern})
-Matches if @var{function} applied to the value being matched returns a
+Matches if @var{function} applied to @var{expval} returns a
 value that matches @var{upattern}.  This is like the @code{pred}
 U-pattern, except that it tests the result against @var{upattern},
 rather than against a boolean truth value.  The @var{function} call can
@@ -446,17 +446,16 @@ can have one of the following forms:
 
 @table @asis
 @item function name (a symbol), e.g., @code{integerp}
-In this case, the named function is applied to the value being
-matched.
+In this case, the named function is applied to @var{expval}.
 
 @item lambda expression, e.g., @code{(lambda (n) (= 42 n))}
-In this case, the lambda expression is called with one argument, the
-value being matched.
+In this case, the lambda expression is called with one argument,
+@var{expval}.
 
 @item function call with @var{n} args, e.g., @code{(= 42)}
 This is a function call with @var{n} specified arguments; the function
 is called with these @var{n} arguments and an additional @var{n}+1-th
-argument that is the value being matched.
+argument that is @var{expval}.
 @end table
 
 @noindent
@@ -487,22 +486,22 @@ Backquoted patterns have the form @code{`@var{qpattern}} where
 @table @code
 
 @item (@var{qpattern1} . @var{qpattern2})
-Matches if the value being matched is a cons cell whose @code{car}
+Matches if @var{expval} is a cons cell whose @code{car}
 matches @var{qpattern1} and whose @code{cdr} matches @var{qpattern2}.
 This readily generalizes to backquoted lists as in
 @w{@code{(@var{qpattern1} @var{qpattern2} @dots{})}}.
 
 @item [@var{qpattern1} @var{qpattern2} @dots{} @var{qpatternm}]
-Matches if the value being matched is a vector of length @var{m} whose
+Matches if @var{expval} is a vector of length @var{m} whose
 @code{0}..@code{(@var{m}-1)}th elements match @var{qpattern1},
 @var{qpattern2} @dots{} @var{qpatternm}, respectively.
 
 @item @var{atom}
-Matches if corresponding element of the value being matched is
+Matches if corresponding element of @var{expval} is
 @code{equal} to the specified @var{atom}.
 
 @item ,@var{upattern}
-Matches if the corresponding element of the value being matched
+Matches if the corresponding element of @var{expval}
 matches the specified @var{upattern}.
 @end table
 
