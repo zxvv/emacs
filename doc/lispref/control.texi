@@ -389,16 +389,17 @@ Matches if @var{expval} is @code{equal} to @var{val}.
 @item @var{keyword}
 @itemx @var{integer}
 @itemx @var{string}
-Matches if the value is @code{equal} to the literal.
+Matches if @var{expval} is @code{equal} to the literal object.
 This is a special case of @code{'@var{val}}, above,
 possible because these types are self-quoting.
 
 @item _
-Matches any value.  This is known as @dfn{don't care} or @dfn{wildcard}.
+Matches any @var{expval}.
+This is known as @dfn{don't care} or @dfn{wildcard}.
 
 @item @var{symbol}
-Matches any value, and additionally let-binds @var{symbol} to the
-value it matched, so that you can later refer to it, either in the
+Matches any @var{expval}, and additionally let-binds @var{symbol} to
+@var{expval}, so that you can later refer to it, either in the
 @var{body-forms} or also later in the pattern.
 
 @item (pred @var{predfun})
@@ -473,8 +474,7 @@ Here's an example of using U-patterns:
 @end example
 
 In addition, you can use backquoted patterns that are more powerful.
-They allow matching the value of the @var{expression} that is the
-first argument of @code{pcase} against specifications of its
+They allow matching @var{expval} against specifications of its
 @emph{structure}.  For example, you can specify that the value must be
 a list of 2 elements whose first element is a specific string and the
 second element is any value with a backquoted pattern like
