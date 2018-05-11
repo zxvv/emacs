@@ -143,21 +143,21 @@ The complete list of standard patterns is as follows:
                 the second occurrence becomes an `eq'uality test.
   (or PAT...)	matches if any of the patterns matches.
   (and PAT...)	matches if all the patterns match.
-  \\='VAL		matches if the object is `equal' to VAL.
+  \\='VAL		matches if EXPVAL is `equal' to VAL.
   KEYWORD	shorthand for \\='KEYWORD
   INTEGER	shorthand for \\='INTEGER
   STRING	shorthand for \\='STRING
-  (pred FUN)	matches if FUN applied to the object returns non-nil.
+  (pred FUN)	matches if FUN applied to EXPVAL returns non-nil.
   (guard BOOLEXP)	matches if BOOLEXP evaluates to non-nil.
   (let PAT EXP)	matches if EXP matches PAT.
-  (app FUN PAT)	matches if FUN applied to the object matches PAT.
+  (app FUN PAT)	matches if FUN applied to EXPVAL matches PAT.
 
 Additional patterns can be defined using `pcase-defmacro'.
 
 The FUN argument in the `app' pattern may have the following forms:
   SYMBOL or (lambda ARGS BODY)  in which case it's called with one argument.
-  (F ARG1 .. ARGn) in which case F gets called with an n+1'th argument
-                        which is the value being matched.
+  (F ARG1 .. ARGn) in which case F gets called with EXPVAL as
+                        the n+1'th argument.
 So a FUN of the form SYMBOL is equivalent to (FUN).
 FUN can refer to variables bound earlier in the pattern.
 
