@@ -375,9 +375,9 @@ forms: ``unquoted'' and ``quoted'', also known as
 A Q-pattern begins with a backquote and often builds
 upon one or more simpler U-patterns.
 
-Note: In the description of the patterns below, we use ``the value
-being matched'' to refer to the value of the @var{expression} that is
-the first argument of @code{pcase}.
+Note: In the following description, the ``value being matched''
+refers to the result of evaluating @var{expression}
+(first argument to @code{pcase}).
 
 A U-pattern can have the following forms:
 
