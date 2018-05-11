@@ -138,15 +138,15 @@ used to introduce logical patterns inside backquoted patterns.
 The complete list of standard patterns is as follows:
 
   _		matches anything.
+  \\='VAL		matches if EXPVAL is `equal' to VAL.
+  KEYWORD	shorthand for \\='KEYWORD
+  INTEGER	shorthand for \\='INTEGER
+  STRING	shorthand for \\='STRING
   SYMBOL	matches anything and binds it to SYMBOL.
                 If a SYMBOL is used twice in the same pattern
                 the second occurrence becomes an `eq'uality test.
   (or PAT...)	matches if any of the patterns matches.
   (and PAT...)	matches if all the patterns match.
-  \\='VAL		matches if EXPVAL is `equal' to VAL.
-  KEYWORD	shorthand for \\='KEYWORD
-  INTEGER	shorthand for \\='INTEGER
-  STRING	shorthand for \\='STRING
   (pred FUN)	matches if FUN applied to EXPVAL returns non-nil.
   (guard BOOLEXP)	matches if BOOLEXP evaluates to non-nil.
   (let PAT EXP)	matches if EXP matches PAT.
