@@ -368,6 +368,7 @@ The rest of this subsection describes the builtin @var{pattern}
 forms, and concludes with a another Lisp macro you can use to
 extend the set of builtin @var{pattern} forms.
 
+@cindex backquote (@code{pcase} syntax)
 The builtin set includes two broad categories of @var{pattern}
 forms: ``unquoted'' and ``quoted'', also known as
 @dfn{U-pattern} and @dfn{Q-pattern}, respectively.
