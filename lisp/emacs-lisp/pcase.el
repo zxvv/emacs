@@ -135,6 +135,14 @@ the pattern matches.  A logical pattern can take one of the forms:
   (let PAT EXP)	matches if EXP matches PAT.
   (app FUN PAT)	matches if FUN applied to EXPVAL matches PAT.
 
+FUN in `pred' and `app' can take one of the forms:
+  SYMBOL  or  (lambda ARGS BODY)
+     call it with one argument
+  (F ARG1 .. ARGn)
+     call F with ARG1..ARGn and EXPVAL as n+1'th argument
+So a FUN of the form SYMBOL is equivalent to (FUN).
+FUN can refer to variables bound earlier in the pattern.
+
 On the other hand, a structural pattern specifies a template,
 and allows for elements of that template to be either constants
 or sub-patterns (of either category).  A structural pattern
@@ -153,13 +161,6 @@ In the above example, the predicate is the logical-AND of:
    of CODE..., its value is bound to the symbol `ml'.)
 
 Additional patterns can be defined using `pcase-defmacro'.
-
-The FUN argument in the `app' pattern may have the following forms:
-  SYMBOL or (lambda ARGS BODY)  in which case it's called with one argument.
-  (F ARG1 .. ARGn) in which case F gets called with EXPVAL as
-                        the n+1'th argument.
-So a FUN of the form SYMBOL is equivalent to (FUN).
-FUN can refer to variables bound earlier in the pattern.
 
 See Info node `(elisp) Pattern-Matching Conditional' in the
 Emacs Lisp manual for more information and examples."
