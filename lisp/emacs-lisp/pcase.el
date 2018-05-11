@@ -128,9 +128,7 @@ return value.  If there is no match the returned value is nil.
 Another difference is that pattern elements may be quoted,
 meaning they must match exactly: The pattern \\='(foo bar)
 matches only against two element lists containing the symbols
-`foo' and `bar' in that order.  (As a short-hand, atoms always
-match themselves, such as numbers or strings, and need not be
-quoted.)
+`foo' and `bar' in that order.
 
 Lastly, a pattern can be logical, such as (pred numberp), that
 matches any number-like element; or the symbol `_', that matches
@@ -146,8 +144,9 @@ The complete list of standard patterns is as follows:
   (or PAT...)	matches if any of the patterns matches.
   (and PAT...)	matches if all the patterns match.
   \\='VAL		matches if the object is `equal' to VAL.
-  ATOM		is a shorthand for \\='ATOM.
-		   ATOM can be a keyword, an integer, or a string.
+  KEYWORD	shorthand for \\='KEYWORD
+  INTEGER	shorthand for \\='INTEGER
+  STRING	shorthand for \\='STRING
   (pred FUN)	matches if FUN applied to the object returns non-nil.
   (guard BOOLEXP)	matches if BOOLEXP evaluates to non-nil.
   (let PAT EXP)	matches if EXP matches PAT.
