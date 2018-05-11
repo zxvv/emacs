@@ -451,7 +451,7 @@ In this case, the named function is applied to @var{expval}.
 
 @item lambda expression, e.g., @code{(lambda (n) (= 42 n))}
 In this case, the lambda expression is called with one argument,
-@var{expval}.
+@var{expval} (@pxref{Lambda Expressions}).
 
 @item function call with @var{n} args, e.g., @code{(= 42)}
 This is a function call with @var{n} specified arguments; the function
