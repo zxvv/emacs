@@ -114,28 +114,11 @@ For the first CASE whose PATTERN \"matches\" EXPVAL,
 evaluate its CODE..., and return the value of the last form.
 If no CASE has a PATTERN that matches, return nil.
 
-A structural PATTERN describes a template that identifies a class
-of values.  For example, the pattern \\=`(,foo ,bar) matches any
-two element list, binding its elements to symbols named `foo' and
-`bar' -- in much the same way that `cl-destructuring-bind' would.
+The two catagories of patterns are logical and structural.
 
-A significant difference from `cl-destructuring-bind' is that, if
-a pattern match fails, the next case is tried until either a
-successful match is found or there are no more cases.  The CODE
-expression corresponding to the matching pattern determines the
-return value.  If there is no match the returned value is nil.
-
-Another difference is that pattern elements may be quoted,
-meaning they must match exactly: The pattern \\='(foo bar)
-matches only against two element lists containing the symbols
-`foo' and `bar' in that order.
-
-Lastly, a pattern can be logical, such as (pred numberp), that
-matches any number-like element; or the symbol `_', that matches
-anything.  Also, when patterns are backquoted, a comma may be
-used to introduce logical patterns inside backquoted patterns.
-
-The complete list of standard patterns is as follows:
+A logical pattern expands, in essence, to a predicate function
+to call on EXPVAL.  When the return value of that call is non-nil,
+the pattern matches.  A logical pattern can take one of the forms:
 
   _		matches anything.
   \\='VAL		matches if EXPVAL is `equal' to VAL.
@@ -151,6 +134,23 @@ The complete list of standard patterns is as follows:
   (guard BOOLEXP)	matches if BOOLEXP evaluates to non-nil.
   (let PAT EXP)	matches if EXP matches PAT.
   (app FUN PAT)	matches if FUN applied to EXPVAL matches PAT.
+
+On the other hand, a structural pattern specifies a template,
+and allows for elements of that template to be either constants
+or sub-patterns (of either category).  A structural pattern
+begins with `backquote' and logical sub-pattern elements are
+introduced by a comma.  For example:
+
+  \\=`(technical ,ml)
+
+The predicate function specified by a structural pattern is a
+combination of those specified by any sub-patterns, wrapped in a
+top-level condition: EXPVAL must be \"congruent\" with the template.
+In the above example, the predicate is the logical-AND of:
+ - Is EXPVAL a list of two elements?
+ - Is the first element the symbol `technical'?
+ - True!  (The second element can be anything, and for the sake
+   of CODE..., its value is bound to the symbol `ml'.)
 
 Additional patterns can be defined using `pcase-defmacro'.
 
