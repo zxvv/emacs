@@ -145,7 +145,11 @@ FUN can refer to variables bound earlier in the pattern.
 
 On the other hand, a structural pattern specifies a template,
 and allows for elements of that template to be either constants
-or sub-patterns (of either category).  A structural pattern
+or sub-patterns (of either category).
+
+ Issue: Is ``of either category'' correct?
+
+A structural pattern
 begins with `backquote' and logical sub-pattern elements are
 introduced by a comma.  For example:
 
