@@ -325,7 +325,7 @@ Each clause has the form: @code{(@var{pattern} @var{body-forms}@dots{})}.
 @c R: Key words are ``attempt'' and ``in order'',
 @c    which clearly conveys the iterative nature.
 Evaluate @var{expression}, attempt to match the value of
-@var{expression} with the @var{pattern} of each clause in order,
+@var{expression} with @var{pattern} of each clause in order,
 and pass control to @var{body-forms} of the clause that matches.
 
 @c Variant B
@@ -482,8 +482,8 @@ Matches if @var{function} called on @var{expval} returns a
 value that matches @var{upattern}.
 @var{function} can take one of the
 forms described for @var{predfun}, above.
-This is like the @code{pred}
-U-pattern, except that it tests the result against @var{upattern},
+This is like @code{pred},
+except that it tests the result against @var{upattern},
 rather than against a boolean truth value.
 @c Issue: Same as above (side-effecting FUNCTION or UPATTERN).
 
