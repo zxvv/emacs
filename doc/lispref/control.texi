@@ -411,8 +411,30 @@ Matches any @var{expval}, and additionally let-binds @var{symbol} to
 
 @item (pred @var{predfun})
 Matches if the predicate function @var{predfun} returns non-@code{nil}
-when called with @var{expval} as its argument.
-@var{predfun} can be one of the possible forms described below.
+when called on @var{expval}.
+@var{predfun} can have one of the possible forms:
+
+@table @asis
+@item function name (a symbol)
+Call the named function with one argument, @var{expval}.
+
+Example: @code{integerp}
+
+@item lambda expression
+Call the anonymous function with one argument,
+@var{expval} (@pxref{Lambda Expressions}).
+
+Example: @code{(lambda (n) (= 42 n))}
+
+@item function call with @var{n} args
+Call the function (the first element of the function call)
+with @var{n} arguments (the other elements) and an additional
+@var{n}+1-th argument that is @var{expval}.
+
+Example: @code{(= 42)}@*
+In this example, the function is @code{=}, @var{n} is one, and
+the actual function call becomes: @w{@code{(= 42 @var{expval})}}.
+@end table
 
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
@@ -456,11 +478,13 @@ U-pattern.  For example:
 @c Issue: Same as above (side-effecting EXPRESSION).
 
 @item (app @var{function} @var{upattern})
-Matches if @var{function} applied to @var{expval} returns a
-value that matches @var{upattern}.  This is like the @code{pred}
+Matches if @var{function} called on @var{expval} returns a
+value that matches @var{upattern}.
+@var{function} can take one of the
+forms described for @var{predfun}, above.
+This is like the @code{pred}
 U-pattern, except that it tests the result against @var{upattern},
-rather than against a boolean truth value.  The @var{function} call can
-use one of the forms described below.
+rather than against a boolean truth value.
 @c Issue: Same as above (side-effecting FUNCTION or UPATTERN).
 
 @item (or @var{upattern1} @var{upattern2}@dots{})
@@ -471,23 +495,6 @@ should all bind the same symbols.
 
 @item (and @var{upattern1} @var{upattern2}@dots{})
 Matches if all the argument U-patterns match.
-@end table
-
-The function calls used in the @code{pred} and @code{app} U-patterns
-can have one of the following forms:
-
-@table @asis
-@item function name (a symbol), e.g., @code{integerp}
-In this case, the named function is applied to @var{expval}.
-
-@item lambda expression, e.g., @code{(lambda (n) (= 42 n))}
-In this case, the lambda expression is called with one argument,
-@var{expval} (@pxref{Lambda Expressions}).
-
-@item function call with @var{n} args, e.g., @code{(= 42)}
-This is a function call with @var{n} specified arguments; the function
-is called with these @var{n} arguments and an additional @var{n}+1-th
-argument that is @var{expval}.
 @end table
 
 @noindent
