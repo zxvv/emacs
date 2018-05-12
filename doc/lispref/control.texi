@@ -401,6 +401,13 @@ possible because these types are self-quoting.
 Matches any @var{expval}, and additionally let-binds @var{symbol} to
 @var{expval}, so that you can later refer to it, either in the
 @var{body-forms} or also later in the pattern.
+@c Hmm, ``later in the pattern'' alludes to SYMBOL being not
+@c the entirety of the pattern, i.e., merely a (leading) part.
+@c Issue: Which is better?
+@c        - Move that blurb to ‘guard’.
+@c        - Suffix w/ ``when SYMBOL is part of a larger pattern''.
+@c        - Move all idioms and examples out of table.
+@c        Probably latter is best.
 
 @item (pred @var{predfun})
 Matches if the predicate function @var{predfun} returns non-@code{nil}
@@ -415,6 +422,28 @@ previous U-patterns.  Typically used inside an @code{and} U-pattern, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
 @code{x} to that number.
+@c What about side-effecting (ugh-lý :-D) BOOLEAN-EXPRESSION
+@c that mutates let-bound vars?  Any (dis-)guarantees?  Consider:
+@c
+@c (defun hmm (n)
+@c   (pcase n
+@c     ((and x (guard (< (decf x) 10)))
+@c      (list 'single-digit x))))
+@c
+@c (hmm 42) => nil
+@c (hmm 11) => nil
+@c (hmm 10) => (single-digit 10)
+@c (hmm 1)  => (single-digit 1)
+@c (hmm 0)  => (single-digit 0)
+@c
+@c Maybe there is some discussion of this already?
+@c Issue: Pick one:
+@c        - This is a design decision.  Document the limitation
+@c          (i.e., BOOLEAN-EXPRESSION SHOULD NOT be side-effecting).
+@c        - This is an unforseen case; behavior is based on the
+@c          implementation (‘cond’ + redundant ‘let*’ expansion)
+@c          and is considered {undefined, wontfix, futurefix}.
+@c          Leave undocumented for now.
 
 @item (let @var{upattern} @var{expression})
 Matches if the specified @var{expression} matches the specified
@@ -424,6 +453,7 @@ first argument to @code{pcase}.  (It is called @code{let} because
 @var{upattern} can bind symbols to values using the @var{symbol}
 U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
+@c Issue: Same as above (side-effecting EXPRESSION).
 
 @item (app @var{function} @var{upattern})
 Matches if @var{function} applied to @var{expval} returns a
@@ -431,6 +461,7 @@ value that matches @var{upattern}.  This is like the @code{pred}
 U-pattern, except that it tests the result against @var{upattern},
 rather than against a boolean truth value.  The @var{function} call can
 use one of the forms described below.
+@c Issue: Same as above (side-effecting FUNCTION or UPATTERN).
 
 @item (or @var{upattern1} @var{upattern2}@dots{})
 Matches if one the argument U-patterns matches.  As soon as the first
