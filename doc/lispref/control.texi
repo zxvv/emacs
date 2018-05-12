@@ -383,6 +383,10 @@ A U-pattern can have the following forms:
 
 @table @code
 
+@item _
+Matches any @var{expval}.
+This is known as @dfn{don't care} or @dfn{wildcard}.
+
 @item '@var{val}
 Matches if @var{expval} is @code{equal} to @var{val}.
 
@@ -392,10 +396,6 @@ Matches if @var{expval} is @code{equal} to @var{val}.
 Matches if @var{expval} is @code{equal} to the literal object.
 This is a special case of @code{'@var{val}}, above,
 possible because these types are self-quoting.
-
-@item _
-Matches any @var{expval}.
-This is known as @dfn{don't care} or @dfn{wildcard}.
 
 @item @var{symbol}
 Matches any @var{expval}, and additionally let-binds @var{symbol} to
