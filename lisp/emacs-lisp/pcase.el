@@ -114,11 +114,9 @@ For the first CASE whose PATTERN \"matches\" EXPVAL,
 evaluate its CODE..., and return the value of the last form.
 If no CASE has a PATTERN that matches, return nil.
 
-The two catagories of patterns are logical and structural.
-
-A logical pattern expands, in essence, to a predicate function
+A `pcase' pattern expands, in essence, to a predicate function
 to call on EXPVAL.  When the return value of that call is non-nil,
-the pattern matches.  A logical pattern can take one of the forms:
+the pattern matches.  A pattern can take one of the forms:
 
   _		matches anything.
   \\='VAL		matches if EXPVAL is `equal' to VAL.
@@ -142,23 +140,6 @@ FUN in `pred' and `app' can take one of the forms:
      call F with ARG1..ARGn and EXPVAL as n+1'th argument
 So a FUN of the form SYMBOL is equivalent to (FUN).
 FUN can refer to variables bound earlier in the pattern.
-
-On the other hand, a structural pattern specifies a template,
-and allows for elements of that template to be either constants
-or sub-patterns (of either category).  A structural pattern
-begins with `backquote' and logical sub-pattern elements are
-introduced by a comma.  For example:
-
-  \\=`(technical ,ml)
-
-The predicate function specified by a structural pattern is a
-combination of those specified by any sub-patterns, wrapped in a
-top-level condition: EXPVAL must be \"congruent\" with the template.
-In the above example, the predicate is the logical-AND of:
- - Is EXPVAL a list of two elements?
- - Is the first element the symbol `technical'?
- - True!  (The second element can be anything, and for the sake
-   of CODE..., its value is bound to the symbol `ml'.)
 
 Additional patterns can be defined using `pcase-defmacro'.
 
@@ -916,7 +897,7 @@ Otherwise, it defers to REST which is a list of branches of the form
        sexp))
 
 (pcase-defmacro \` (qpat)
-  "Backquote-style pcase patterns.
+  "Backquote-style pcase patterns: \\=`QPAT
 QPAT can take the following forms:
   (QPAT1 . QPAT2)       matches if QPAT1 matches the car and QPAT2 the cdr.
   [QPAT1 QPAT2..QPATn]  matches a vector of length n and QPAT1..QPATn match
@@ -925,7 +906,20 @@ QPAT can take the following forms:
   SYMBOL                matches if EXPVAL is `equal' to SYMBOL.
   KEYWORD               likewise for KEYWORD.
   INTEGER               likewise for INTEGER.
-  STRING                likewise for STRING."
+  STRING                likewise for STRING.
+
+The list or vector QPAT is a template.  The predicate function
+specified by a backquote-style pattern is a combination of those
+specified by any sub-patterns, wrapped in a top-level condition:
+EXPVAL must be \"congruent\" with the template.  For example:
+
+  \\=`(technical ,forum)
+
+The predicate is the logical-AND of:
+ - Is EXPVAL a list of two elements?
+ - Is the first element the symbol `technical'?
+ - True!  (The second element can be anything, and for the sake
+   of the body forms, its value is bound to the symbol `forum'.)"
   (declare (debug (pcase-QPAT)))
   (cond
    ((eq (car-safe qpat) '\,) (cadr qpat))
