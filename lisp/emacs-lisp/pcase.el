@@ -118,28 +118,29 @@ A `pcase' pattern expands, in essence, to a predicate function
 to call on EXPVAL.  When the return value of that call is non-nil,
 the pattern matches.  A pattern can take one of the forms:
 
-  _		matches anything.
-  \\='VAL		matches if EXPVAL is `equal' to VAL.
-  KEYWORD	shorthand for \\='KEYWORD
-  INTEGER	shorthand for \\='INTEGER
-  STRING	shorthand for \\='STRING
-  SYMBOL	matches anything and binds it to SYMBOL.
-                If a SYMBOL is used twice in the same pattern
-                the second occurrence becomes an `eq'uality test.
-  (or PAT...)	matches if any of the patterns matches.
-  (and PAT...)	matches if all the patterns match.
-  (pred FUN)	matches if FUN called on EXPVAL returns non-nil.
-  (guard BOOLEXP)	matches if BOOLEXP evaluates to non-nil.
-  (let PAT EXP)	matches if EXP matches PAT.
-  (app FUN PAT)	matches if FUN called on EXPVAL matches PAT.
+  _                matches anything.
+  \\='VAL             matches if EXPVAL is `equal' to VAL.
+  KEYWORD          shorthand for \\='KEYWORD
+  INTEGER          shorthand for \\='INTEGER
+  STRING           shorthand for \\='STRING
+  SYMBOL           matches anything and binds it to SYMBOL.
+                   If a SYMBOL is used twice in the same pattern
+                   the second occurrence becomes an `eq'uality test.
+  (or PAT...)      matches if any of the patterns matches.
+  (and PAT...)     matches if all the patterns match.
+  (pred FUN)       matches if FUN called on EXPVAL returns non-nil.
+  (guard BOOLEXP)  matches if BOOLEXP evaluates to non-nil.
+  (let PAT EXPR)   matches if EXPR matches PAT.
+  (app FUN PAT)    matches if FUN called on EXPVAL matches PAT.
 
 FUN in `pred' and `app' can take one of the forms:
   SYMBOL  or  (lambda ARGS BODY)
      call it with one argument
   (F ARG1 .. ARGn)
      call F with ARG1..ARGn and EXPVAL as n+1'th argument
-So a FUN of the form SYMBOL is equivalent to (FUN).
-FUN can refer to variables bound earlier in the pattern.
+
+FUN, BOOLEXP, EXPR, and subsequent PAT can refer to variables
+bound earlier in the pattern by a SYMBOL pattern.
 
 Additional patterns can be defined using `pcase-defmacro'.
 
