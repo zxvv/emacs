@@ -440,15 +440,15 @@ In this example, the function is @code{=}, @var{n} is one, and
 the actual function call becomes: @w{@code{(= 42 @var{expval})}}.
 @end table
 
-@item (app @var{function} @var{upattern})
+@item (app @var{function} @var{pattern})
 Matches if @var{function} called on @var{expval} returns a
-value that matches @var{upattern}.
+value that matches @var{pattern}.
 @var{function} can take one of the
 forms described for @var{predfun}, above.
 This is like @code{pred},
-except that it tests the result against @var{upattern},
+except that it tests the result against @var{pattern},
 rather than against a boolean truth value.
-@c Issue: Same as below (side-effecting FUNCTION or UPATTERN).
+@c Issue: Same as below (side-effecting FUNCTION or PATTERN).
 
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
@@ -481,22 +481,22 @@ which matches any number smaller than 10 and let-binds the variable
 @c          and is considered {undefined, wontfix, futurefix}.
 @c          Leave undocumented for now.
 
-@item (let @var{upattern} @var{expr})
+@item (let @var{pattern} @var{expr})
 Evaluates @var{expr} to get @var{exprval}
-and matches if @var{exprval} matches @var{upattern}.
+and matches if @var{exprval} matches @var{pattern}.
 (It is called @code{let} because
-@var{upattern} can bind symbols to values using the @var{symbol}
+@var{pattern} can bind symbols to values using the @var{symbol}
 U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 @c Issue: Same as above (side-effecting EXPRESSION).
 
-@item (or @var{upattern1} @var{upattern2}@dots{})
+@item (or @var{pattern1} @var{pattern2}@dots{})
 Matches if one the argument U-patterns matches.  As soon as the first
 matching U-pattern is found, the rest are not tested.  For this reason,
 if any of the U-patterns let-bind symbols to the matched value, they
 should all bind the same symbols.
 
-@item (and @var{upattern1} @var{upattern2}@dots{})
+@item (and @var{pattern1} @var{pattern2}@dots{})
 Matches if all the argument U-patterns match.
 @end table
 
