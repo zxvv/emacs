@@ -409,6 +409,10 @@ Matches any @var{expval}, and additionally let-binds @var{symbol} to
 @c        - Move all idioms and examples out of table.
 @c        Probably latter is best.
 
+Two symbols to avoid are @code{t}, which behaves like @code{_}
+(above) and is deprecated, and @code{nil}, which signals error.
+It makes no sense to bind these (@pxref{Constant Variables}).
+
 @item (pred @var{predfun})
 Matches if the predicate function @var{predfun} returns non-@code{nil}
 when called on @var{expval}.
