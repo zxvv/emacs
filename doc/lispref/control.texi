@@ -395,7 +395,7 @@ Matches if @var{expval} is @code{equal} to @var{val}.
 @itemx @var{string}
 Matches if @var{expval} is @code{equal} to the literal object.
 This is a special case of @code{'@var{val}}, above,
-possible because these types are self-quoting.
+possible because literal objects of these types are self-quoting.
 
 @item @var{symbol}
 Matches any @var{expval}, and additionally let-binds @var{symbol} to
