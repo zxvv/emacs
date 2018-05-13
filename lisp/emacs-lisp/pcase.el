@@ -126,12 +126,12 @@ the pattern matches.  A pattern can take one of the forms:
   SYMBOL           matches anything and binds it to SYMBOL.
                    If a SYMBOL is used twice in the same pattern
                    the second occurrence becomes an `eq'uality test.
-  (or PAT...)      matches if any of the patterns matches.
-  (and PAT...)     matches if all the patterns match.
   (pred FUN)       matches if FUN called on EXPVAL returns non-nil.
   (app FUN PAT)    matches if FUN called on EXPVAL matches PAT.
   (guard BOOLEXP)  matches if BOOLEXP evaluates to non-nil.
   (let PAT EXPR)   matches if EXPR matches PAT.
+  (or PAT...)      matches if any of the patterns matches.
+  (and PAT...)     matches if all the patterns match.
 
 FUN in `pred' and `app' can take one of the forms:
   SYMBOL  or  (lambda ARGS BODY)
