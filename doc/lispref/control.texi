@@ -534,9 +534,14 @@ Matches if @var{expval} is a vector of length @var{m} whose
 @code{0}..@code{(@var{m}-1)}th elements match @var{qpattern1},
 @var{qpattern2} @dots{} @var{qpatternm}, respectively.
 
-@item @var{atom}
-Matches if corresponding element of @var{expval} is
-@code{equal} to the specified @var{atom}.
+@item @var{symbol}
+@itemx @var{keyword}
+@itemx @var{integer}
+@itemx @var{string}
+Matches if the corresponding element of @var{expval} is
+@code{equal} to the specified object.
+Note that, aside from @var{symbol}, this is the same set of
+self-quoting types that are acceptable as a U-pattern.
 
 @item ,@var{upattern}
 Matches if the corresponding element of @var{expval}

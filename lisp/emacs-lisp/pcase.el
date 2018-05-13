@@ -920,8 +920,10 @@ QPAT can take the following forms:
   [QPAT1 QPAT2..QPATn]  matches a vector of length n and QPAT1..QPATn match
                            its 0..(n-1)th elements, respectively.
   ,PAT                  matches if the pcase pattern PAT matches.
-  ATOM                  matches if the object is `equal' to ATOM.
-			   ATOM can be a symbol, an integer, or a string."
+  SYMBOL                matches if the object is `equal' to SYMBOL.
+  KEYWORD               likewise for KEYWORD.
+  INTEGER               likewise for INTEGER.
+  STRING                likewise for STRING."
   (declare (debug (pcase-QPAT)))
   (cond
    ((eq (car-safe qpat) '\,) (cadr qpat))
