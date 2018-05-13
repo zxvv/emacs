@@ -440,6 +440,16 @@ In this example, the function is @code{=}, @var{n} is one, and
 the actual function call becomes: @w{@code{(= 42 @var{expval})}}.
 @end table
 
+@item (app @var{function} @var{upattern})
+Matches if @var{function} called on @var{expval} returns a
+value that matches @var{upattern}.
+@var{function} can take one of the
+forms described for @var{predfun}, above.
+This is like @code{pred},
+except that it tests the result against @var{upattern},
+rather than against a boolean truth value.
+@c Issue: Same as below (side-effecting FUNCTION or UPATTERN).
+
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
 allows you to include in a U-pattern boolean conditions that refer to
@@ -479,16 +489,6 @@ and matches if @var{exprval} matches @var{upattern}.
 U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 @c Issue: Same as above (side-effecting EXPRESSION).
-
-@item (app @var{function} @var{upattern})
-Matches if @var{function} called on @var{expval} returns a
-value that matches @var{upattern}.
-@var{function} can take one of the
-forms described for @var{predfun}, above.
-This is like @code{pred},
-except that it tests the result against @var{upattern},
-rather than against a boolean truth value.
-@c Issue: Same as above (side-effecting FUNCTION or UPATTERN).
 
 @item (or @var{upattern1} @var{upattern2}@dots{})
 Matches if one the argument U-patterns matches.  As soon as the first
