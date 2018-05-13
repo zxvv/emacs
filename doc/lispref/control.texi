@@ -471,11 +471,10 @@ which matches any number smaller than 10 and let-binds the variable
 @c          and is considered {undefined, wontfix, futurefix}.
 @c          Leave undocumented for now.
 
-@item (let @var{upattern} @var{expression})
-Matches if the specified @var{expression} matches the specified
-@var{upattern}.  This allows matching a pattern against the value of
-an @emph{arbitrary} expression, not just the expression that is the
-first argument to @code{pcase}.  (It is called @code{let} because
+@item (let @var{upattern} @var{expr})
+Evaluates @var{expr} to get @var{exprval}
+and matches if @var{exprval} matches @var{upattern}.
+(It is called @code{let} because
 @var{upattern} can bind symbols to values using the @var{symbol}
 U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
