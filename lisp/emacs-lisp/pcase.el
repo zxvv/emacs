@@ -206,6 +206,9 @@ Emacs Lisp manual for more information and examples."
     (require 'help-fns)
     (with-temp-buffer
       (insert (or (cdr ud) main))
+      ;; Presentation Note: For conceptual continuity, it
+      ;; would be nice to guarantee that backquote comes first.
+      ;; The order of other extensions is unimportant, however.
       (mapatoms
        (lambda (symbol)
          (let ((me (get symbol 'pcase-macroexpander)))
