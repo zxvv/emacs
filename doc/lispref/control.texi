@@ -595,12 +595,16 @@ evaluation results:
 Additional U-patterns can be defined using the @code{pcase-defmacro}
 macro.
 
-@defmac pcase-defmacro name args &rest body
+@defmac pcase-defmacro name args &rest [docstring] body
 Define a new kind of U-pattern for @code{pcase}.  The new U-pattern will
 be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
 should describe how to rewrite the U-pattern @var{name} into some other
 U-pattern.  The rewriting will be the result of evaluating @var{body}
 in an environment where @var{args} are bound to @var{actual-args}.
+
+For documentation consistency, use @code{EXPVAL}
+in @var{docstring} to stand for the result of
+evaluating @var{expression} (first arg to `pcase').
 @end defmac
 
 @node Combining Conditions

@@ -419,7 +419,10 @@ any kind of error."
 (defmacro pcase-defmacro (name args &rest body)
   "Define a new kind of pcase PATTERN, by macro expansion.
 Patterns of the form (NAME ...) will be expanded according
-to this macro."
+to this macro.
+
+For documentation consistency, use \"EXPVAL\" in the docstring
+to stand for the result of evaluating EXP (first arg to `pcase')."
   (declare (indent 2) (debug defun) (doc-string 3))
   ;; Add the function via `fsym', so that an autoload cookie placed
   ;; on a pcase-defmacro will cause the macro to be loaded on demand.
@@ -920,7 +923,7 @@ QPAT can take the following forms:
   [QPAT1 QPAT2..QPATn]  matches a vector of length n and QPAT1..QPATn match
                            its 0..(n-1)th elements, respectively.
   ,PAT                  matches if the pcase pattern PAT matches.
-  SYMBOL                matches if the object is `equal' to SYMBOL.
+  SYMBOL                matches if EXPVAL is `equal' to SYMBOL.
   KEYWORD               likewise for KEYWORD.
   INTEGER               likewise for INTEGER.
   STRING                likewise for STRING."
