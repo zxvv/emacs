@@ -332,10 +332,6 @@ forms: ``unquoted'' and ``quoted'', also known as
 A Q-pattern begins with a backquote and often builds
 upon one or more simpler U-patterns.
 
-Note: In the following description, @var{expval} stands
-for the result of evaluating @var{expression}
-(first argument to @code{pcase}).
-
 A U-pattern can have the following forms:
 
 @table @code
