@@ -364,10 +364,10 @@ Two symbols to avoid are @code{t}, which behaves like @code{_}
 (above) and is deprecated, and @code{nil}, which signals error.
 It makes no sense to bind these (@pxref{Constant Variables}).
 
-@item (pred @var{predfun})
-Matches if the predicate @var{predfun} returns non-@code{nil}
+@item (pred @var{function})
+Matches if the predicate @var{function} returns non-@code{nil}
 when called on @var{expval}.
-@var{predfun} can have one of the possible forms:
+@var{function} can have one of the possible forms:
 
 @table @asis
 @item function name (a symbol)
@@ -395,7 +395,7 @@ the actual function call becomes: @w{@code{(= 42 @var{expval})}}.
 Matches if @var{function} called on @var{expval} returns a
 value that matches @var{pattern}.
 @var{function} can take one of the
-forms described for @var{predfun}, above.
+forms described for @var{function}, above.
 This is like @code{pred},
 except that it tests the result against @var{pattern},
 rather than against a boolean truth value.
