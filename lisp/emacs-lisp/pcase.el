@@ -114,9 +114,9 @@ For the first CASE whose PATTERN \"matches\" EXPVAL,
 evaluate its CODE..., and return the value of the last form.
 If no CASE has a PATTERN that matches, return nil.
 
-A `pcase' pattern expands, in essence, to a predicate function
-to call on EXPVAL.  When the return value of that call is non-nil,
-the pattern matches.  A pattern can take one of the forms:
+Each PATTERN expands, in essence, to a predicate function to
+call on EXPVAL.  When the return value of that call is non-nil,
+PATTERN matches.  PATTERN can take one of the forms:
 
   _                matches anything.
   \\='VAL             matches if EXPVAL is `equal' to VAL.
