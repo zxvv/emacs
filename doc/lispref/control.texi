@@ -451,7 +451,7 @@ rather than against a boolean truth value.
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
 allows you to include in a U-pattern boolean conditions that refer to
 symbols bound to values (including @var{expval}) by
-previous U-patterns.  Typically used inside an @code{and} U-pattern, see
+previous U-patterns.  Typically used inside @code{and}, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
 @code{x} to that number.
@@ -460,8 +460,8 @@ which matches any number smaller than 10 and let-binds the variable
 Evaluates @var{expr} to get @var{exprval}
 and matches if @var{exprval} matches @var{pattern}.
 (It is called @code{let} because
-@var{pattern} can bind symbols to values using the @var{symbol}
-U-pattern.  For example:
+@var{pattern} can bind symbols to values using @var{symbol}.
+For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 
 @item (or @var{pattern1} @var{pattern2}@dots{})
