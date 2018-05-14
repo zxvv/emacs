@@ -114,8 +114,8 @@ For the first CASE whose PATTERN \"matches\" EXPVAL,
 evaluate its CODE..., and return the value of the last form.
 If no CASE has a PATTERN that matches, return nil.
 
-Each PATTERN expands, in essence, to a predicate function to
-call on EXPVAL.  When the return value of that call is non-nil,
+Each PATTERN expands, in essence, to a predicate to call
+on EXPVAL.  When the return value of that call is non-nil,
 PATTERN matches.  PATTERN can take one of the forms:
 
   _                matches anything.
@@ -909,9 +909,9 @@ QPAT can take the following forms:
   INTEGER               likewise for INTEGER.
   STRING                likewise for STRING.
 
-The list or vector QPAT is a template.  The predicate function
-specified by a backquote-style pattern is a combination of those
-specified by any sub-patterns, wrapped in a top-level condition:
+The list or vector QPAT is a template.  The predicate formed
+by a backquote-style pattern is a combination of those
+formed by any sub-patterns, wrapped in a top-level condition:
 EXPVAL must be \"congruent\" with the template.  For example:
 
   \\=`(technical ,forum)
