@@ -903,7 +903,7 @@ QPAT can take the following forms:
   (QPAT1 . QPAT2)       matches if QPAT1 matches the car and QPAT2 the cdr.
   [QPAT1 QPAT2..QPATn]  matches a vector of length n and QPAT1..QPATn match
                            its 0..(n-1)th elements, respectively.
-  ,PAT                  matches if the pcase pattern PAT matches.
+  ,PAT                  matches if the `pcase' pattern PAT matches.
   SYMBOL                matches if EXPVAL is `equal' to SYMBOL.
   KEYWORD               likewise for KEYWORD.
   INTEGER               likewise for INTEGER.
