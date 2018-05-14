@@ -346,11 +346,6 @@ Otherwise, @code{pcase} evaluates to @code{nil}.
 @c   of the last @var{body} form in the successful clause.
 @c which could surely be further improved...  /whine  --ttn
 
-Depending on the pattern, a match may provide additional
-bindings (@pxref{Dynamic Binding}),
-during the evaluation of @var{body-forms}.
-@c Issue: ∃ (better xref target)?
-
 @c Original text.
 Evaluate @var{expression} and choose among an arbitrary number of
 alternatives based on the value of @var{expression}.  The possible
