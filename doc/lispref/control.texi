@@ -308,55 +308,17 @@ literal value (for comparisons to literal values you'd use
 @code{cond}), or it can be a more general description of the expected
 structure of the expression's value.
 
-@c Issue: Personally, i'd prefer to ‘s/body-forms/body/g’, but maybe
-@c        consistency w/ the ‘cond’ docs is more important.  Hmm.  --ttn
-
 @defmac pcase expression &rest clauses
-Each clause has the form: @code{(@var{pattern} @var{body-forms}@dots{})}.
-@c R: Describing structure early (near the @def) helps chunking.
-@c    (Indeed, for simple forms, the @def line is sufficient.)
-@c    Qs answered:
-@c    (a) What are the parts?
-@c    (b) What are their names?
-@c    (c) What is the un-named support structure (syntax)?
-@c Issue: Whether or not to include ``... in @var{clauses} ...''.
+Each clause in @var{clauses} has the form:
+@w{@code{(@var{pattern} @var{body-forms}@dots{})}}.
 
-@c Variant A
-@c R: Key words are ``attempt'' and ``in order'',
-@c    which clearly conveys the iterative nature.
-Evaluate @var{expression}, attempt to match the value of
-@var{expression} with @var{pattern} of each clause in order,
-and pass control to @var{body-forms} of the clause that matches.
-
-@c Variant B
-@c R: Better flow (to the author's ear), but perhaps iterative
-@c    nature (implied by ``first'') too easy to overlook.
-@c    OTOH, key word ``successful'' hints at possibility of
-@c    failure, which implies ``attempt'' at something.
-@c    What could that something be, but a search (iterative)?
-Evaluate @var{expression} and pass control to @var{body-forms}
-of the first clause in @var{clauses} whose @var{pattern}
-is a successful match for the value of @var{expression}.
+Evaluate @var{expression} to determine its value, @var{expval}.
+Find the first clause in @var{clauses} whose @var{pattern} matches
+@var{expval} and pass control to that clause's @var{body-forms}.
 
 If there is a match, the value of @code{pcase} is the value
 of the last of @var{body-forms} in the successful clause.
 Otherwise, @code{pcase} evaluates to @code{nil}.
-@c See, using ``body'' instead of ``body-forms'' allows for:
-@c   If there is a match, the value of @code{pcase} is the value
-@c   of the last @var{body} form in the successful clause.
-@c which could surely be further improved...  /whine  --ttn
-
-@c Original text.
-Evaluate @var{expression} and choose among an arbitrary number of
-alternatives based on the value of @var{expression}.  The possible
-alternatives are specified by @var{clauses}, each of which must be a
-list of the form @code{(@var{pattern} @var{body-forms}@dots{})}.
-@code{pcase} tries to match the value of @var{expression} to the
-@var{pattern} of each clause, in textual order.  If the value matches,
-the clause succeeds; @code{pcase} then evaluates its @var{body-forms},
-and returns the value of the last of @var{body-forms}.  Any remaining
-@var{clauses} are ignored.  If no clauses match, then the @code{pcase}
-form evaluates to @code{nil}.
 @end defmac
 
 The rest of this subsection describes the builtin @var{pattern}
