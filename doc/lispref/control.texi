@@ -365,7 +365,7 @@ Two symbols to avoid are @code{t}, which behaves like @code{_}
 It makes no sense to bind these (@pxref{Constant Variables}).
 
 @item (pred @var{predfun})
-Matches if the predicate function @var{predfun} returns non-@code{nil}
+Matches if the predicate @var{predfun} returns non-@code{nil}
 when called on @var{expval}.
 @var{predfun} can have one of the possible forms:
 
