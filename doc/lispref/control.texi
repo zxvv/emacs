@@ -395,9 +395,9 @@ the actual function call becomes: @w{@code{(= 42 @var{expval})}}.
 Matches if @var{function} called on @var{expval} returns a
 value that matches @var{pattern}.
 @var{function} can take one of the
-forms described for @var{function}, above.
-This is like @code{pred},
-except that it tests the result against @var{pattern},
+forms described for @code{pred}, above.
+Unlike @code{pred}, however,
+@code{app} tests the result against @var{pattern},
 rather than against a boolean truth value.
 
 @item (guard @var{boolean-expression})
