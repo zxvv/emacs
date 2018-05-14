@@ -401,13 +401,7 @@ Unlike @code{pred}, however,
 rather than against a boolean truth value.
 
 @item (guard @var{boolean-expression})
-Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
-allows you to include in a U-pattern boolean conditions that refer to
-symbols bound to values (including @var{expval}) by
-previous U-patterns.  Typically used inside @code{and}, see
-below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
-which matches any number smaller than 10 and let-binds the variable
-@code{x} to that number.
+Matches if @var{boolean-expression} evaluates to non-@code{nil}.
 
 @item (let @var{pattern} @var{expr})
 Evaluates @var{expr} to get @var{exprval}
@@ -426,6 +420,28 @@ should all bind the same symbols.
 @item (and @var{pattern1} @var{pattern2}@dots{})
 Matches if all the argument U-patterns match.
 @end table
+
+A common idiom is to write a pattern starting with @code{and},
+with one or more @var{symbol} sub-patterns providing bindings
+to the sub-patterns that follow (as well as to the body forms).
+For example, the following pattern matches single-digit integers.
+
+@example
+(and
+  (pred integerp)
+  n                     ; @r{bind @code{n} to @var{expval}}
+  (guard (<= -9 n 9)))
+@end example
+
+@noindent
+First, @code{pred} matches if @w{@code{(integerp @var{expval})}}
+evaluates to non-@code{nil}.
+Next, @code{n} is a @var{symbol} pattern that matches
+anything and binds @code{n} to @var{expval}.
+Lastly, @code{guard} matches if the boolean expression
+@w{@code{(<= -9 n 9)}} (note the reference to @code{n})
+evaluates to non-@code{nil}.
+If all these sub-patterns match, @code{and} matches.
 
 @anchor{pcase-symbol-caveats}
 @heading Caveats for @var{symbol} in @var{bigpat}
