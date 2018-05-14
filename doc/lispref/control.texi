@@ -399,15 +399,13 @@ possible because literal objects of these types are self-quoting.
 
 @item @var{symbol}
 Matches any @var{expval}, and additionally let-binds @var{symbol} to
-@var{expval}, so that you can later refer to it, either in the
-@var{body-forms} or also later in the pattern.
-@c Hmm, ``later in the pattern'' alludes to SYMBOL being not
-@c the entirety of the pattern, i.e., merely a (leading) part.
-@c Issue: Which is better?
-@c        - Move that blurb to ‘guard’.
-@c        - Suffix w/ ``when SYMBOL is part of a larger pattern''.
-@c        - Move all idioms and examples out of table.
-@c        Probably latter is best.
+@var{expval}, such that this binding is available to
+@var{body-forms} (@pxref{Dynamic Binding}).
+
+If @var{symbol} is part of a compound pattern @var{bigpat}
+(e.g., by using @code{and}, below), the binding is also available to
+the portion of @var{bigpat} following the appearance of @var{symbol}.
+This usage has some caveats (@pxref{pcase-symbol-caveats,,caveats}).
 
 Two symbols to avoid are @code{t}, which behaves like @code{_}
 (above) and is deprecated, and @code{nil}, which signals error.
@@ -499,6 +497,62 @@ should all bind the same symbols.
 @item (and @var{pattern1} @var{pattern2}@dots{})
 Matches if all the argument U-patterns match.
 @end table
+
+@anchor{pcase-symbol-caveats}
+@heading Caveats for @var{symbol} in @var{bigpat}
+
+@enumerate
+@item When @var{symbol} occurs more than once in @var{bigpat},
+the second and subsequent occurances do not expand to re-binding,
+but instead expand to an equality test using @code{eq}.
+
+The following example features a @code{pcase} form
+with two clauses and two @var{bigpat}, A and B.
+Both A and B first check that @var{expval} is a
+pair (using @code{pred}),
+and then bind symbols to the @code{car} and @code{cdr}
+of @var{expval} (using one @code{app} each).
+
+For A, because symbol @code{st} is mentioned twice, the second
+mention becomes an equality test using @code{eq}.
+On the other hand, B uses two separate symbols, @code{s1} and
+@code{s2}, both of which become independent bindings.
+
+@example
+(defun grok (object)
+  (pcase object
+    ((and (pred consp)        ; bigpat A
+          (app car st)        ; first mention: st
+          (app cdr st))       ; second mention: st
+     (list 'eq st))
+    ((and (pred consp)        ; bigpat B
+          (app car s1)        ; first mention: s1
+          (app cdr s2))       ; first mention: s2
+     (list 'not-eq s1 s2))))
+
+@group
+(grok (let ((s "yow!"))
+        (cons s s)))
+@result{} (eq "yow!")
+@end group
+
+@group
+(grok (cons "yow!" "yow!"))
+@result{} (not-eq "yow!" "yow!")
+@end group
+
+@group
+(grok '(4 2))
+@result{} (not-eq 4 (2))
+@end group
+@end example
+
+@item Side-effecting code referencing @var{symbol} is undefined.
+Avoid.
+
+@item ``@dots{}they should all bind the same symbols'' (from @code{or}).
+@c (what does it mean?)
+@end enumerate
 
 @noindent
 Here's an example of using U-patterns:
