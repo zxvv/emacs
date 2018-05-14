@@ -446,7 +446,6 @@ forms described for @var{predfun}, above.
 This is like @code{pred},
 except that it tests the result against @var{pattern},
 rather than against a boolean truth value.
-@c Issue: Same as below (side-effecting FUNCTION or PATTERN).
 
 @item (guard @var{boolean-expression})
 Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
@@ -456,28 +455,6 @@ previous U-patterns.  Typically used inside an @code{and} U-pattern, see
 below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
 which matches any number smaller than 10 and let-binds the variable
 @code{x} to that number.
-@c What about side-effecting (ugh-lý :-D) BOOLEAN-EXPRESSION
-@c that mutates let-bound vars?  Any (dis-)guarantees?  Consider:
-@c
-@c (defun hmm (n)
-@c   (pcase n
-@c     ((and x (guard (< (decf x) 10)))
-@c      (list 'single-digit x))))
-@c
-@c (hmm 42) => nil
-@c (hmm 11) => nil
-@c (hmm 10) => (single-digit 10)
-@c (hmm 1)  => (single-digit 1)
-@c (hmm 0)  => (single-digit 0)
-@c
-@c Maybe there is some discussion of this already?
-@c Issue: Pick one:
-@c        - This is a design decision.  Document the limitation
-@c          (i.e., BOOLEAN-EXPRESSION SHOULD NOT be side-effecting).
-@c        - This is an unforseen case; behavior is based on the
-@c          implementation (‘cond’ + redundant ‘let*’ expansion)
-@c          and is considered {undefined, wontfix, futurefix}.
-@c          Leave undocumented for now.
 
 @item (let @var{pattern} @var{expr})
 Evaluates @var{expr} to get @var{exprval}
@@ -486,7 +463,6 @@ and matches if @var{exprval} matches @var{pattern}.
 @var{pattern} can bind symbols to values using the @var{symbol}
 U-pattern.  For example:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
-@c Issue: Same as above (side-effecting EXPRESSION).
 
 @item (or @var{pattern1} @var{pattern2}@dots{})
 Matches if one the argument U-patterns matches.  As soon as the first
