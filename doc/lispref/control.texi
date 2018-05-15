@@ -635,6 +635,71 @@ On the other hand, B uses two separate symbols, @code{s1} and
 
 @item Side-effecting code referencing @var{symbol} is undefined.
 Avoid.
+For example, here are two similar functions.
+Both use @code{and}, @var{symbol} and @code{guard}:
+
+@example
+@group
+(defun square-double-digit-p/OK (integer)
+  (pcase (* integer integer)
+    ((and n (guard (< 9 n 100))) (list 'yes n))
+    (sorry (list 'no sorry))))
+
+(square-double-digit-p/OK 9) @result{} (yes 81)
+(square-double-digit-p/OK 3) @result{} (no 9)
+@end group
+
+@group
+(defun square-double-digit-p/WRONG (integer)
+  (pcase (* integer integer)
+    ((and n (guard (< 9 (incf n) 100))) (list 'yes n))
+    (sorry (list 'no sorry))))
+
+(square-double-digit-p/WRONG 9) @result{} (yes 81)
+(square-double-digit-p/WRONG 3) @result{} (yes 9)
+@end group
+@end example
+
+@noindent
+The difference is in @var{boolean-expression}:
+@code{OK} references @code{n} simply and directly,
+while @code{WRONG} references @code{n} with a side-effect,
+in the expression @code{(incf n)}.
+When @code{integer} is 3, here's what happens:
+
+@itemize
+@item The first @code{n} binds it to @var{expval},
+i.e., the result of evaluating @code{(* 3 3)}, or 9.
+
+@item @var{boolean-expression} is evaluated:
+
+@example
+start:   (< 9 (incf n)        100)
+becomes: (< 9 (setq n (1+ n)) 100)
+becomes: (< 9 (setq n (1+ 9)) 100)
+becomes: (< 9 (setq n 10)     100)
+                                   ; @r{side-effect here!}
+becomes: (< 9       n         100) ; @r{@code{n} now bound to 10}
+becomes: (< 9      10         100)
+becomes: t
+@end example
+
+@item Because the result of the evaluation is @code{t},
+@code{guard} matches, @code{and} matches, and
+control passes to that clause's body forms.
+@end itemize
+
+@noindent
+Aside from the mathematical incorrectness of asserting that 9 is a
+double-digit integer, there is another problem with @code{WRONG}.
+The body form references @code{n} once more, yet we do not see
+the updated value---10---at all.  What happened to it?
+
+To sum up, it's best to avoid side-effecting references to
+@var{symbol} patterns entirely, not only
+in @var{boolean-expression} (in @code{guard}),
+but also in @var{expr} (in @code{let})
+and @var{function} (in @code{pred} and @code{app}).
 
 @item ``@dots{}they should all bind the same symbols'' (from @code{or}).
 @c (what does it mean?)
