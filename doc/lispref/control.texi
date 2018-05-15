@@ -423,7 +423,8 @@ Matches if all the argument U-patterns match.
 @subheading Example: Advantage Over @code{cl-case}
 
 Here's an example that highlights some advantages @code{pcase}
-has over @code{cl-case}.
+has over @code{cl-case}
+(@pxref{Conditionals,,,cl,Common Lisp Extensions}).
 
 @example
 (pcase (get-return-code x)
