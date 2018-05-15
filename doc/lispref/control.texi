@@ -579,7 +579,12 @@ Because that is the last body form in a successfully matched
 the return value of @code{grok/pcase} (@pxref{What Is a Function}).
 
 @anchor{pcase-symbol-caveats}
-@heading Caveats for @var{symbol} in @var{bigpat}
+@subheading Caveats for @var{symbol} in @var{bigpat}
+
+The preceding examples all use compound patterns (also known
+as @var{bigpat} in the documentation) which include the @var{symbol}
+sub-pattern in some way.
+Here are some important details about that usage.
 
 @enumerate
 @item When @var{symbol} occurs more than once in @var{bigpat},
