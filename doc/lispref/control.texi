@@ -581,8 +581,9 @@ the return value of @code{grok/pcase} (@pxref{What Is a Function}).
 @anchor{pcase-symbol-caveats}
 @subheading Caveats for @var{symbol} in @var{bigpat}
 
-The preceding examples all use compound patterns (also known
-as @var{bigpat} in the documentation) which include the @var{symbol}
+The preceding examples all use compound patterns sequenced
+by either @code{and} or @code{or} (also known as @var{bigpat}
+in this manual) which include the @var{symbol}
 sub-pattern in some way.
 Here are some important details about that usage.
 
