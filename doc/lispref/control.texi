@@ -419,6 +419,9 @@ should all bind the same symbols.
 Matches if all the argument U-patterns match.
 @end table
 
+@anchor{pcase-example-1}
+@heading Example 1: Using @code{and}
+
 A common idiom is to write a pattern starting with @code{and},
 with one or more @var{symbol} sub-patterns providing bindings
 to the sub-patterns that follow (as well as to the body forms).
@@ -440,6 +443,9 @@ Lastly, @code{guard} matches if the boolean expression
 @w{@code{(<= -9 n 9)}} (note the reference to @code{n})
 evaluates to non-@code{nil}.
 If all these sub-patterns match, @code{and} matches.
+
+@anchor{pcase-example-2}
+@heading Example 2: Reformulation with @code{pcase}
 
 Here is another example that shows how to reformulate a simple
 matching task from its traditional implementation
@@ -499,8 +505,7 @@ The pattern is @code{or}, which tries to match in turn its argument
 sub-patterns, first @code{and} (lines 2-7), then @code{let} (line 8),
 until one of them succeeds.
 
-@c TODO: add anchor (and maybe heading) above; add pxref here
-As in the previous example,
+As in the previous example (@pxref{pcase-example-1,,Example 1}),
 @code{and} begins with a @code{pred} sub-pattern to ensure
 the following sub-patterns work with an object of the correct
 type (string, in this case).  If @w{@code{(stringp @var{expval})}}
@@ -510,7 +515,7 @@ The next @code{pred} (lines 4-5) evaluates
 @w{@code{(string-match RX @var{expval})}}
 and matches if the result is non-@code{nil}, which means
 that @var{expval} has the desired form: @code{key:NUMBER}.
-Again, failing this, @var{pred} fails and @code{and}, too.
+Again, failing this, @code{pred} fails and @code{and}, too.
 
 Lastly (in this series of @code{and} sub-patterns), @code{app}
 evaluates @w{@code{(match-string 1 @var{expval})}}
