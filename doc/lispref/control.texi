@@ -420,7 +420,7 @@ Matches if all the argument U-patterns match.
 @end table
 
 @anchor{pcase-example-1}
-@heading Example 1: Using @code{and}
+@subheading Example: Using @code{and}
 
 A common idiom is to write a pattern starting with @code{and},
 with one or more @var{symbol} sub-patterns providing bindings
@@ -445,7 +445,7 @@ evaluates to non-@code{nil}.
 If all these sub-patterns match, @code{and} matches.
 
 @anchor{pcase-example-2}
-@heading Example 2: Reformulation with @code{pcase}
+@subheading Example: Reformulation with @code{pcase}
 
 Here is another example that shows how to reformulate a simple
 matching task from its traditional implementation
@@ -477,9 +477,9 @@ The reformulation demonstrates @var{symbol} binding
 as well as some of the other pattern types.
 
 @example
+@group
 (defun grok/pcase (obj)
   (pcase obj
-@group
     ((or                                     ; @r{line 1}
       (and                                   ; @r{line 2}
        (pred stringp)                        ; @r{line 3}
