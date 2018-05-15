@@ -407,9 +407,7 @@ Matches if @var{boolean-expression} evaluates to non-@code{nil}.
 Evaluates @var{expr} to get @var{exprval}
 and matches if @var{exprval} matches @var{pattern}.
 (It is called @code{let} because
-@var{pattern} can bind symbols to values using @var{symbol}.
-For example:
-@w{@code{((or `(key . ,val) (let val 5)) val)}}.)
+@var{pattern} can bind symbols to values using @var{symbol}.)
 
 @item (or @var{pattern1} @var{pattern2}@dots{})
 Matches if one the argument U-patterns matches.  As soon as the first
@@ -442,6 +440,111 @@ Lastly, @code{guard} matches if the boolean expression
 @w{@code{(<= -9 n 9)}} (note the reference to @code{n})
 evaluates to non-@code{nil}.
 If all these sub-patterns match, @code{and} matches.
+
+Here is another example that shows how to reformulate a simple
+matching task from its traditional implementation
+(function @code{grok/traditional}) to one using
+@code{pcase} (function @code{grok/pcase}).
+The docstring for both these functions is:
+``If OBJ is a string of the form "key:NUMBER", return NUMBER
+(a string).  Otherwise, return the list ("149" default).''
+First, the traditional implementation (@pxref{Regular Expressions}):
+
+@example
+@group
+(defun grok/traditional (obj)
+  (if (and (stringp obj)
+           (string-match "^key:\\([[:digit:]]+\\)$" obj))
+      (match-string 1 obj)
+    (list "149" 'default)))
+@end group
+
+@group
+(grok/traditional "key:0")   @result{} "0"
+(grok/traditional "key:149") @result{} "149"
+(grok/traditional 'monolith) @result{} ("149" default)
+@end group
+@end example
+
+@noindent
+The reformulation demonstrates @var{symbol} binding
+as well as some of the other pattern types.
+
+@example
+(defun grok/pcase (obj)
+  (pcase obj
+@group
+    ((or                                     ; @r{line 1}
+      (and                                   ; @r{line 2}
+       (pred stringp)                        ; @r{line 3}
+       (pred (string-match                   ; @r{line 4}
+              "^key:\\([[:digit:]]+\\)$"))   ; @r{line 5}
+       (app (match-string 1)                 ; @r{line 6}
+            val))                            ; @r{line 7}
+      (let val (list "149" 'default)))       ; @r{line 8}
+     val)))                                  ; @r{line 9}
+@end group
+
+@group
+(grok/pcase "key:0")   @result{} "0"
+(grok/pcase "key:149") @result{} "149"
+(grok/pcase 'monolith) @result{} ("149" default)
+@end group
+@end example
+
+@noindent
+The bulk of @code{grok/pcase} is a single clause of a @code{pcase}
+form, the pattern on lines 1-8, the (single) body form on line 9.
+The pattern is @code{or}, which tries to match in turn its argument
+sub-patterns, first @code{and} (lines 2-7), then @code{let} (line 8),
+until one of them succeeds.
+
+@c TODO: add anchor (and maybe heading) above; add pxref here
+As in the previous example,
+@code{and} begins with a @code{pred} sub-pattern to ensure
+the following sub-patterns work with an object of the correct
+type (string, in this case).  If @w{@code{(stringp @var{expval})}}
+returns @code{nil}, @code{pred} fails, and thus @code{and} fails, too.
+
+The next @code{pred} (lines 4-5) evaluates
+@w{@code{(string-match RX @var{expval})}}
+and matches if the result is non-@code{nil}, which means
+that @var{expval} has the desired form: @code{key:NUMBER}.
+Again, failing this, @var{pred} fails and @code{and}, too.
+
+Lastly (in this series of @code{and} sub-patterns), @code{app}
+evaluates @w{@code{(match-string 1 @var{expval})}}
+to get a temporary value @var{tmp} (i.e., the ``NUMBER'' substring)
+and tries to match @var{tmp} against pattern @code{val}.
+Since that is a @var{symbol} pattern, it matches unconditionally
+and additionally binds @code{val} to @var{tmp}.
+
+Now that @code{app} has matched, all @code{and} sub-patterns
+have matched, and so @code{and} matches.
+Likewise, once @code{and} has matched, @code{or} matches
+and does not proceed to try sub-pattern @code{let} (line 9).
+
+Let's consider the situation where @code{obj} is not a string,
+or it is a string but has the wrong form.
+In this case, one of the @code{pred} (lines 3-5) fails to match,
+thus @code{and} (line 2) fails to match,
+thus @code{or} (line 1) proceeds to try sub-pattern @code{let} (line 9).
+
+First, @code{let} evaluates @w{@code{(list "149" 'default)}}
+to get @w{@code{("149" default)}}, the @var{exprval}, and then
+tries to match @var{exprval} against pattern @code{val}.
+Since that is a @var{symbol} pattern, it matches unconditionally
+and additionally binds @code{val} to @var{exprval}.
+Now that @code{let} has matched, @code{or} matches.
+
+Note how both @code{and} and @code{let} sub-patterns finish in the
+same way: by trying (always successfully) to match against the
+@var{symbol} pattern @code{val}, in the process binding @code{val}.
+Thus, @code{or} always matches and control always passes
+to the body form (line 9).
+Because that is the last body form in a successfully matched
+@code{pcase} clause, it is the value of @code{pcase} and likewise
+the return value of @code{grok/pcase} (@pxref{What Is a Function}).
 
 @anchor{pcase-symbol-caveats}
 @heading Caveats for @var{symbol} in @var{bigpat}
