@@ -515,8 +515,8 @@ First, the traditional implementation (@pxref{Regular Expressions}):
 @end example
 
 @noindent
-The reformulation demonstrates @var{symbol} binding
-as well as some of the other pattern types.
+The reformulation demonstrates @var{symbol} binding as well as
+@code{or}, @code{and}, @code{pred}, @code{app} and @code{let}.
 
 @example
 @group
@@ -676,7 +676,7 @@ Both use @code{and}, @var{symbol} and @code{guard}:
 @end example
 
 @noindent
-The difference is in @var{boolean-expression}:
+The difference is in @var{boolean-expression} in @code{guard}:
 @code{OK} references @code{n} simply and directly,
 while @code{WRONG} references @code{n} with a side-effect,
 in the expression @code{(incf n)}.
