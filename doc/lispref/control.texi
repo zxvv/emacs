@@ -410,8 +410,18 @@ and matches if @var{exprval} matches @var{pattern}.
 @var{pattern} can bind symbols to values using @var{symbol}.)
 
 @item (or @var{pattern1} @var{pattern2}@dots{})
-Matches if one the argument U-patterns matches.  As soon as the first
-matching U-pattern is found, the rest are not tested.  For this reason,
+Attempts to match @var{pattern1}, @var{pattern2}, @dots{}, in order,
+until one of them succeeds.
+In that case, @code{or} likewise matches,
+and the rest of the sub-patterns are not tested.
+(Note that there must be at least two sub-patterns.
+Simply @w{@code{(or @var{pattern1})}} signals error.)
+@c Issue: Is this correct and intended?
+@c        Are there exceptions, qualifications?
+@c        (Btw, ``Please avoid it'' is a poor error message.)
+
+@c TODO: Pick one: (a) drop; (b) forw-ref caveat.
+For this reason,
 if any of the U-patterns let-bind symbols to the matched value, they
 should all bind the same symbols.
 
