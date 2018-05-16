@@ -415,8 +415,12 @@ matching U-pattern is found, the rest are not tested.  For this reason,
 if any of the U-patterns let-bind symbols to the matched value, they
 should all bind the same symbols.
 
-@item (and @var{pattern1} @var{pattern2}@dots{})
-Matches if all the argument U-patterns match.
+@item (and @var{pattern1}@dots{})
+Attempts to match @var{pattern1}@dots{}, in order,
+until one of them fails to match.
+In that case, @code{and} likewise fails to match,
+and the rest of the sub-patterns are not tested.
+If all sub-patterns match, @code{and} matches.
 @end table
 
 @anchor{pcase-example-0}
