@@ -362,7 +362,8 @@ This usage has some caveats (@pxref{pcase-symbol-caveats,,caveats}).
 
 Two symbols to avoid are @code{t}, which behaves like @code{_}
 (above) and is deprecated, and @code{nil}, which signals error.
-It makes no sense to bind these (@pxref{Constant Variables}).
+Likewise, it makes no sense to bind keyword symbols
+(@pxref{Constant Variables}).
 
 @item (pred @var{function})
 Matches if the predicate @var{function} returns non-@code{nil}
