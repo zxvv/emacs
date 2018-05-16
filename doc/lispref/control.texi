@@ -655,30 +655,30 @@ Both use @code{and}, @var{symbol} and @code{guard}:
 
 @example
 @group
-(defun square-double-digit-p/OK (integer)
+(defun square-double-digit-p/CLEAN (integer)
   (pcase (* integer integer)
     ((and n (guard (< 9 n 100))) (list 'yes n))
     (sorry (list 'no sorry))))
 
-(square-double-digit-p/OK 9) @result{} (yes 81)
-(square-double-digit-p/OK 3) @result{} (no 9)
+(square-double-digit-p/CLEAN 9) @result{} (yes 81)
+(square-double-digit-p/CLEAN 3) @result{} (no 9)
 @end group
 
 @group
-(defun square-double-digit-p/WRONG (integer)
+(defun square-double-digit-p/MAYBE (integer)
   (pcase (* integer integer)
     ((and n (guard (< 9 (incf n) 100))) (list 'yes n))
     (sorry (list 'no sorry))))
 
-(square-double-digit-p/WRONG 9) @result{} (yes 81)
-(square-double-digit-p/WRONG 3) @result{} (yes 9)
+(square-double-digit-p/MAYBE 9) @result{} (yes 81)
+(square-double-digit-p/MAYBE 3) @result{} (yes 9)  ; @r{WRONG!}
 @end group
 @end example
 
 @noindent
 The difference is in @var{boolean-expression} in @code{guard}:
-@code{OK} references @code{n} simply and directly,
-while @code{WRONG} references @code{n} with a side-effect,
+@code{CLEAN} references @code{n} simply and directly,
+while @code{MAYBE} references @code{n} with a side-effect,
 in the expression @code{(incf n)}.
 When @code{integer} is 3, here's what happens:
 
@@ -706,7 +706,7 @@ control passes to that clause's body forms.
 
 @noindent
 Aside from the mathematical incorrectness of asserting that 9 is a
-double-digit integer, there is another problem with @code{WRONG}.
+double-digit integer, there is another problem with @code{MAYBE}.
 The body form references @code{n} once more, yet we do not see
 the updated value---10---at all.  What happened to it?
 
