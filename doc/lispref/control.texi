@@ -339,7 +339,7 @@ For that, why not use @code{cond}?  Wait, what?  @dots{}
 Conceptually, the @code{pcase} macro borrows the first-arg focus
 of @code{case} and the clause-processing flow of @code{cond},
 replacing @var{condition} with a generalization of
-``equality test'' called @dfn{matching},
+the equality test called @dfn{matching},
 and adding facilities so that you can concisely express a
 clause's predicate, and arrange to share let-bindings between
 a clause's predicate and @var{body-forms}.
