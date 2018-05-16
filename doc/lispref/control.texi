@@ -813,7 +813,7 @@ in an environment where @var{args} are bound to @var{actual-args}.
 
 For documentation consistency, use @code{EXPVAL}
 in @var{doc}, the docstring, to stand for the result of
-evaluating @var{expression} (first arg to `pcase').
+evaluating @var{expression} (first arg to @code{pcase}).
 @end defmac
 
 @node Combining Conditions
