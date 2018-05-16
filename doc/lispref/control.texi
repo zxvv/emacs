@@ -321,18 +321,13 @@ of the last of @var{body-forms} in the successful clause.
 Otherwise, @code{pcase} evaluates to @code{nil}.
 @end defmac
 
-The rest of this subsection describes the builtin @var{pattern}
+@c Issue: For presentation, we ‘s/U-pattern/core pattern/g’.
+@c        ISTM (from a quick grep) ``core'' is not overused.
+@c        Is there a better term?
+The rest of this subsection describes the core @var{pattern}
 forms, and concludes with a another Lisp macro you can use to
-extend the set of builtin @var{pattern} forms.
-
-@cindex backquote (@code{pcase} syntax)
-The builtin set includes two broad categories of @var{pattern}
-forms: ``unquoted'' and ``quoted'', also known as
-@dfn{U-pattern} and @dfn{Q-pattern}, respectively.
-A Q-pattern begins with a backquote and often builds
-upon one or more simpler U-patterns.
-
-A U-pattern can have the following forms:
+extend the core set.
+A core pattern can have the following forms:
 
 @table @code
 
@@ -423,7 +418,7 @@ Simply @w{@code{(or @var{pattern1})}} signals error.)
 
 @c TODO: Pick one: (a) drop; (b) forw-ref caveat.
 For this reason,
-if any of the U-patterns let-bind symbols to the matched value, they
+if any of the sub-patterns let-binds symbols to the matched value, they
 should all bind the same symbols.
 
 @item (and @var{pattern1}@dots{})
@@ -750,19 +745,19 @@ Matches if @var{expval} is a vector of length @var{m} whose
 Matches if the corresponding element of @var{expval} is
 @code{equal} to the specified object.
 Note that, aside from @var{symbol}, this is the same set of
-self-quoting types that are acceptable as a U-pattern.
+self-quoting types that are acceptable as a core pattern.
 
-@item ,@var{upattern}
+@item ,@var{pattern}
 Matches if the corresponding element of @var{expval}
-matches the specified @var{upattern}.
+matches the @var{pattern}.
 @end table
 
-Note that uses of Q-patterns can be expressed using only U-patterns, as
-Q-patterns are implemented on top of U-patterns using
+Note that uses of Q-patterns can be expressed using only core
+patterns, as Q-patterns are implemented on top of core patterns using
 @code{pcase-defmacro}, described below.  However, using Q-patterns will
 in many cases lead to a more readable code.
 @c FIXME: There should be an example here showing how a 'pcase' that
-@c uses Q-patterns can be rewritten using U-patterns.
+@c uses Q-patterns can be rewritten using core patterns.
 
 Here is an example of using @code{pcase} to implement a simple
 interpreter for a little expression language (note that this example
@@ -801,14 +796,14 @@ evaluation results:
 (evaluate '(sub 1 2) nil)                 ;=> error
 @end example
 
-Additional U-patterns can be defined using the @code{pcase-defmacro}
+Additional patterns can be defined using the @code{pcase-defmacro}
 macro.
 
 @defmac pcase-defmacro name args [doc] &rest body
-Define a new kind of U-pattern for @code{pcase}.  The new U-pattern will
+Define a new kind of pattern for @code{pcase}.  The new pattern will
 be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
-should describe how to rewrite the U-pattern @var{name} into some other
-U-pattern.  The rewriting will be the result of evaluating @var{body}
+should describe how to rewrite the pattern @var{name} into some other
+pattern.  The rewriting will be the result of evaluating @var{body}
 in an environment where @var{args} are bound to @var{actual-args}.
 
 For documentation consistency, use @code{EXPVAL}
