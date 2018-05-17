@@ -852,15 +852,22 @@ requires lexical binding, @pxref{Lexical Binding}):
 @end example
 
 @noindent
-Here @code{`(add ,x ,y)} is a pattern that checks that @code{form} is a
-three-element list starting with the literal symbol @code{add}, then
-extracts the second and third elements and binds them to the variables
-@code{x} and @code{y}.  Then it evaluates @code{x} and @code{y} and
-adds the results.  The @code{call} and @code{fn} patterns similarly
-implement two flavors of function calls.  @code{(pred numberp)} is a
-pattern that simply checks that @code{form} is a number and if so,
-evaluates it.  @code{(pred symbolp)} matches symbols, and returns
-their association.  Finally, @code{_} is the catch-all pattern that
+Here, the first three clauses use backquote-style patterns.
+@code{`(add ,x ,y)} is a pattern that checks that @code{form}
+is a three-element list starting with the literal symbol @code{add},
+then extracts the second and third elements and binds them
+to symbols @code{x} and @code{y}, respectively.
+The clause body evaluates @code{x} and @code{y} and adds the results.
+Similarly, the @code{call} clause implements a function call,
+and the @code{fn} clause implements an anonymous function definition.
+
+The remaining clauses use core patterns.
+@code{(pred numberp)} matches if @code{form} is a number.
+On match, the body evaluates it.
+@code{(pred symbolp)} matches if @code{form} is a symbol.
+On match, the body looks up the symbol in @code{env} and
+returns its association.
+Finally, @code{_} is the catch-all pattern that
 matches anything, so it's suitable for reporting syntax errors.
 
 Here are some sample programs in this small language, including their
