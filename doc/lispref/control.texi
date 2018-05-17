@@ -805,8 +805,8 @@ interpreter for a little expression language (note that this example
 requires lexical binding, @pxref{Lexical Binding}):
 
 @example
-(defun evaluate (exp env)
-  (pcase exp
+(defun evaluate (form env)
+  (pcase form
     (`(add ,x ,y)       (+ (evaluate x env)
                            (evaluate y env)))
     (`(call ,fun ,arg)  (funcall (evaluate fun env)
@@ -814,18 +814,18 @@ requires lexical binding, @pxref{Lexical Binding}):
     (`(fn ,arg ,body)   (lambda (val)
                           (evaluate body (cons (cons arg val)
                                                env))))
-    ((pred numberp)     exp)
-    ((pred symbolp)     (cdr (assq exp env)))
-    (_                  (error "Unknown expression %S" exp))))
+    ((pred numberp)     form)
+    ((pred symbolp)     (cdr (assq form env)))
+    (_                  (error "Unknown expression %S" form))))
 @end example
 
-Here @code{`(add ,x ,y)} is a pattern that checks that @code{exp} is a
+Here @code{`(add ,x ,y)} is a pattern that checks that @code{form} is a
 three-element list starting with the literal symbol @code{add}, then
 extracts the second and third elements and binds them to the variables
 @code{x} and @code{y}.  Then it evaluates @code{x} and @code{y} and
 adds the results.  The @code{call} and @code{fn} patterns similarly
 implement two flavors of function calls.  @code{(pred numberp)} is a
-pattern that simply checks that @code{exp} is a number and if so,
+pattern that simply checks that @code{form} is a number and if so,
 evaluates it.  @code{(pred symbolp)} matches symbols, and returns
 their association.  Finally, @code{_} is the catch-all pattern that
 matches anything, so it's suitable for reporting syntax errors.
