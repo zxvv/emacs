@@ -874,10 +874,10 @@ Here are some sample programs in this small language, including their
 evaluation results:
 
 @example
-(evaluate '(add 1 2) nil)                 ;=> 3
-(evaluate '(add x y) '((x . 1) (y . 2)))  ;=> 3
-(evaluate '(call (fn x (add 1 x)) 2) nil) ;=> 3
-(evaluate '(sub 1 2) nil)                 ;=> error
+(evaluate '(add 1 2) nil)                 @result{} 3
+(evaluate '(add x y) '((x . 1) (y . 2)))  @result{} 3
+(evaluate '(call (fn x (add 1 x)) 2) nil) @result{} 3
+(evaluate '(sub 1 2) nil)                 @result{} error
 @end example
 
 @node Combining Conditions
