@@ -816,7 +816,7 @@ requires lexical binding, @pxref{Lexical Binding}):
                                                env))))
     ((pred numberp)     form)
     ((pred symbolp)     (cdr (assq form env)))
-    (_                  (error "Unknown expression %S" form))))
+    (_                  (error "Syntax error: %S" form))))
 @end example
 
 Here @code{`(add ,x ,y)} is a pattern that checks that @code{form} is a
