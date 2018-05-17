@@ -290,6 +290,7 @@ For example:
 
 @menu
 * Pattern-Matching Conditional::
+* Extending @code{pcase}: Extending pcase.
 @end menu
 
 @node Pattern-Matching Conditional
@@ -304,7 +305,7 @@ For example:
 This subsection describes the @code{pcase} macro,
 a hybrid of @code{cond} and @code{case}
 that overcomes their limitations.
-@c ...and saving the universe... :-D
+For advanced usage information, @xref{Extending pcase}.
 
 @itemize
 @item The @code{cond} form chooses among alternatives
@@ -756,6 +757,35 @@ and @var{function} (in @code{pred} and @code{app}).
 @c (what does it mean?)
 @end enumerate
 
+@node Extending pcase
+@subsection Extending @code{pcase}
+@cindex pcase, defining new kinds of pattern
+@cindex pattern matching, structural
+@cindex structural pattern matching
+
+The @code{pcase} macro supports several kinds of patterns
+(@pxref{Pattern-Matching Conditional}).
+You can add support for other kinds of patterns
+using the @code{pcase-defmacro} macro.
+This subsection describes @code{pcase-defmacro} and
+@dfn{backquote-style patterns}, a set of builtin patterns
+that eases structural matching.  (These patterns were
+defined with @code{pcase-defmacro}.)
+
+@c Hmm, shouldn't this be named ‘pcase-defpattern’?
+@c I suppose it's too late now....  --ttn
+@defmac pcase-defmacro name args [doc] &rest body
+Define a new kind of pattern for @code{pcase}.  The new pattern will
+be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
+should describe how to rewrite the pattern @var{name} into some other
+pattern.  The rewriting will be the result of evaluating @var{body}
+in an environment where @var{args} are bound to @var{actual-args}.
+
+For documentation consistency, use @code{EXPVAL}
+in @var{doc}, the docstring, to stand for the result of
+evaluating @var{expression} (first arg to @code{pcase}).
+@end defmac
+
 In addition, you can use backquoted patterns that are more powerful.
 They allow matching @var{expval} against specifications of its
 @emph{structure}.  For example, you can specify that the value must be
@@ -840,21 +870,6 @@ evaluation results:
 (evaluate '(call (fn x (add 1 x)) 2) nil) ;=> 3
 (evaluate '(sub 1 2) nil)                 ;=> error
 @end example
-
-Additional patterns can be defined using the @code{pcase-defmacro}
-macro.
-
-@defmac pcase-defmacro name args [doc] &rest body
-Define a new kind of pattern for @code{pcase}.  The new pattern will
-be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
-should describe how to rewrite the pattern @var{name} into some other
-pattern.  The rewriting will be the result of evaluating @var{body}
-in an environment where @var{args} are bound to @var{actual-args}.
-
-For documentation consistency, use @code{EXPVAL}
-in @var{doc}, the docstring, to stand for the result of
-evaluating @var{expression} (first arg to @code{pcase}).
-@end defmac
 
 @node Combining Conditions
 @section Constructs for Combining Conditions
