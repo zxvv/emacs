@@ -288,6 +288,8 @@ For example:
 @end group
 @end example
 
+@c Issue: This seems out of place.  It also gives lie to
+@c        ``Emacs Lisp has four conditional forms''.
 @menu
 * Pattern-Matching Conditional::
 * Extending @code{pcase}: Extending pcase.
