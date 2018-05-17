@@ -852,7 +852,7 @@ requires lexical binding, @pxref{Lexical Binding}):
 @end example
 
 @noindent
-Here, the first three clauses use backquote-style patterns.
+The first three clauses use backquote-style patterns.
 @code{`(add ,x ,y)} is a pattern that checks that @code{form}
 is a three-element list starting with the literal symbol @code{add},
 then extracts the second and third elements and binds them
