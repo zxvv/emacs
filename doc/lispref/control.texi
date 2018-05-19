@@ -393,9 +393,9 @@ Matches any @var{expval}, and additionally let-binds @var{symbol} to
 @var{expval}, such that this binding is available to
 @var{body-forms} (@pxref{Dynamic Binding}).
 
-If @var{symbol} is part of a compound pattern @var{bigpat}
+If @var{symbol} is part of a sequencing pattern @var{seqpat}
 (e.g., by using @code{and}, below), the binding is also available to
-the portion of @var{bigpat} following the appearance of @var{symbol}.
+the portion of @var{seqpat} following the appearance of @var{symbol}.
 This usage has some caveats (@pxref{pcase-symbol-caveats,,caveats}).
 
 Two symbols to avoid are @code{t}, which behaves like @code{_}
@@ -447,7 +447,17 @@ Evaluates @var{expr} to get @var{exprval}
 and matches if @var{exprval} matches @var{pattern}.
 (It is called @code{let} because
 @var{pattern} can bind symbols to values using @var{symbol}.)
+@end table
 
+@cindex sequencing pattern
+A @dfn{sequencing pattern} (also known as @var{seqpat}) is a
+pattern that processes its sub-pattern arguments in sequence.
+There are two for @code{pcase}: @code{and} and @code{or}.
+They behave in a similar manner to the special forms
+that share their name (@pxref{Combining Conditions}),
+but instead of processing values, they process sub-patterns.
+
+@table @code
 @item (and @var{pattern1}@dots{})
 Attempts to match @var{pattern1}@dots{}, in order,
 until one of them fails to match.
@@ -637,21 +647,20 @@ Because that is the last body form in a successfully matched
 the return value of @code{grok/pcase} (@pxref{What Is a Function}).
 
 @anchor{pcase-symbol-caveats}
-@subheading Caveats for @var{symbol} in @var{bigpat}
+@subheading Caveats for @var{symbol} in Sequencing Patterns
 
-The preceding examples all use compound patterns sequenced
-by either @code{and} or @code{or} (also known as @var{bigpat}
-in this manual) which include the @var{symbol}
+The preceding examples all use sequencing patterns
+which include the @var{symbol}
 sub-pattern in some way.
 Here are some important details about that usage.
 
 @enumerate
-@item When @var{symbol} occurs more than once in @var{bigpat},
+@item When @var{symbol} occurs more than once in @var{seqpat},
 the second and subsequent occurances do not expand to re-binding,
 but instead expand to an equality test using @code{eq}.
 
 The following example features a @code{pcase} form
-with two clauses and two @var{bigpat}, A and B.
+with two clauses and two @var{seqpat}, A and B.
 Both A and B first check that @var{expval} is a
 pair (using @code{pred}),
 and then bind symbols to the @code{car} and @code{cdr}
@@ -665,11 +674,11 @@ On the other hand, B uses two separate symbols, @code{s1} and
 @example
 (defun grok (object)
   (pcase object
-    ((and (pred consp)        ; bigpat A
+    ((and (pred consp)        ; seqpat A
           (app car st)        ; first mention: st
           (app cdr st))       ; second mention: st
      (list 'eq st))
-    ((and (pred consp)        ; bigpat B
+    ((and (pred consp)        ; seqpat B
           (app car s1)        ; first mention: s1
           (app cdr s2))       ; first mention: s2
      (list 'not-eq s1 s2))))
@@ -761,12 +770,12 @@ and @var{function} (in @code{pred} and @code{app}).
 
 @item On match, the clause's body forms can reference the set
 of symbols the pattern let-binds.
-When @var{bigpat} is @code{and}, this set is
+When @var{seqpat} is @code{and}, this set is
 the union of all the symbols each of its sub-patterns let-binds.
 This makes sense because, for @code{and} to match,
 all the sub-patterns must match.
 
-When @var{bigpat} is @code{or}, things are different:
+When @var{seqpat} is @code{or}, things are different:
 @code{or} matches at the first sub-pattern that matches;
 the rest of the sub-patterns are ignored.
 It makes no sense for each sub-pattern to let-bind a different
