@@ -477,14 +477,9 @@ Simply @w{@code{(or @var{pattern1})}} signals error.)
 @c        (Btw, ``Please avoid it'' is a poor error message.)
 
 To present a consistent environment (@pxref{Intro Eval})
-to @var{body-forms} on match,
-if any of the sub-patterns let-binds symbols, they
-should all bind the same symbols.
-@c Issue: Using ``should'' is kind of weak.  However, the stronger
-@c        ``it is an error to...'' is not exactly correct, either,
-@c        since the error is raised during BODY-FORMS evaluation.
-@c        Maybe ‘s/on match/and avoid a symbol resolution error &/’
-@c        along w/ ‘s/should/must/’?
+to @var{body-forms} (thus avoiding an evaluation error on match),
+if any of the sub-patterns let-binds a set of symbols,
+they @emph{must} all bind the same set of symbols.
 @end table
 
 @anchor{pcase-example-0}
