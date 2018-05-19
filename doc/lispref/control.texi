@@ -818,11 +818,11 @@ Reworking the above example:
 
 @group
 Enter an integer: 42
-(even 42)
+@result{} (even 42)
 @end group
 @group
 Enter an integer: 149
-(odd 149)
+@result{} (odd 149)
 @end group
 @end example
 
