@@ -490,17 +490,23 @@ has over @code{case}
 (@pxref{Conditionals,,,cl,Common Lisp Extensions}).
 
 @example
+@group
 (pcase (get-return-code x)
   ;; string
   ((and (pred stringp) msg)
    (message "%s" msg))
+@end group
+@group
   ;; symbol
   ('success       (message "Done!"))
   ('would-block   (message "Sorry, can't do it now"))
   ('read-only     (message "The shmliblick is read-only"))
   ('access-denied (message "You do not have the needed rights"))
+@end group
+@group
   ;; default
   (code           (message "Unknown return code %S" code)))
+@end group
 @end example
 
 @noindent
@@ -518,10 +524,12 @@ to the sub-patterns that follow (as well as to the body forms).
 For example, the following pattern matches single-digit integers.
 
 @example
+@group
 (and
   (pred integerp)
   n                     ; @r{bind @code{n} to @var{expval}}
   (guard (<= -9 n 9)))
+@end group
 @end example
 
 @noindent
@@ -667,31 +675,26 @@ On the other hand, B uses two separate symbols, @code{s1} and
 @code{s2}, both of which become independent bindings.
 
 @example
+@group
 (defun grok (object)
   (pcase object
     ((and (pred consp)        ; seqpat A
           (app car st)        ; first mention: st
           (app cdr st))       ; second mention: st
      (list 'eq st))
+@end group
+@group
     ((and (pred consp)        ; seqpat B
           (app car s1)        ; first mention: s1
           (app cdr s2))       ; first mention: s2
      (list 'not-eq s1 s2))))
-
-@group
-(grok (let ((s "yow!"))
-        (cons s s)))
-@result{} (eq "yow!")
 @end group
 
 @group
-(grok (cons "yow!" "yow!"))
-@result{} (not-eq "yow!" "yow!")
-@end group
-
-@group
-(grok '(4 2))
-@result{} (not-eq 4 (2))
+(let ((s "yow!"))
+  (grok (cons s s)))      @result{} (eq "yow!")
+(grok (cons "yo!" "yo!")) @result{} (not-eq "yo!" "yo!")
+(grok '(4 2))             @result{} (not-eq 4 (2))
 @end group
 @end example
 
