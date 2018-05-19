@@ -459,10 +459,15 @@ Simply @w{@code{(or @var{pattern1})}} signals error.)
 @c        Are there exceptions, qualifications?
 @c        (Btw, ``Please avoid it'' is a poor error message.)
 
-@c TODO: Pick one: (a) drop; (b) forw-ref caveat.
-For this reason,
-if any of the sub-patterns let-binds symbols to the matched value, they
+To present a consistent environment (@pxref{Intro Eval})
+to @var{body-forms} on match,
+if any of the sub-patterns let-binds symbols, they
 should all bind the same symbols.
+@c Issue: Using ``should'' is kind of weak.  However, the stronger
+@c        ``it is an error to...'' is not exactly correct, either,
+@c        since the error is raised during BODY-FORMS evaluation.
+@c        Maybe ‘s/on match/and avoid a symbol resolution error &/’
+@c        along w/ ‘s/should/must/’?
 
 @item (and @var{pattern1}@dots{})
 Attempts to match @var{pattern1}@dots{}, in order,
@@ -754,8 +759,74 @@ in @var{boolean-expression} (in @code{guard}),
 but also in @var{expr} (in @code{let})
 and @var{function} (in @code{pred} and @code{app}).
 
-@item ``@dots{}they should all bind the same symbols'' (from @code{or}).
-@c (what does it mean?)
+@item On match, the clause's body forms can reference the set
+of symbols the pattern let-binds.
+When @var{bigpat} is @code{and}, this set is
+the union of all the symbols each of its sub-patterns let-binds.
+This makes sense because, for @code{and} to match,
+all the sub-patterns must match.
+
+When @var{bigpat} is @code{or}, things are different:
+@code{or} matches at the first sub-pattern that matches;
+the rest of the sub-patterns are ignored.
+It makes no sense for each sub-pattern to let-bind a different
+set of symbols because the body forms have no way to distinguish
+which sub-pattern matched and choose among the different sets.
+For example, the following is invalid:
+
+@example
+@group
+(pcase (read-number "Enter an integer: ")
+  ((or (and (pred evenp)
+            e-num)      ; @r{bind @code{e-num} to @var{expval}}
+       o-num)           ; @r{bind @code{o-num} to @var{expval}}
+   (list e-num o-num)))
+@end group
+
+@group
+Enter an integer: 42
+@error{} Symbol’s value as variable is void: o-num
+@end group
+@group
+Enter an integer: 149
+@error{} Symbol’s value as variable is void: e-num
+@end group
+@end example
+
+@noindent
+Evaluating body form @w{@code{(list e-num o-num)}} signals error.
+To distinguish between sub-patterns, you can use another symbol,
+identical in name in all sub-patterns but differing in value.
+Reworking the above example:
+
+@example
+@group
+(pcase (read-number "Enter an integer: ")
+  ((and num                                ; @r{line 1}
+        (or (and (pred evenp)              ; @r{line 2}
+                 (let spin 'even))         ; @r{line 3}
+            (let spin 'odd)))              ; @r{line 4}
+   (list spin num)))                       ; @r{line 5}
+@end group
+
+@group
+Enter an integer: 42
+(even 42)
+@end group
+@group
+Enter an integer: 149
+(odd 149)
+@end group
+@end example
+
+@noindent
+Line 1 ``factors out'' the @var{expval} binding with
+@code{and} and @var{symbol} (in this case, @code{num}).
+The @code{or} begins in the same manner as before (line 2),
+but instead of binding different symbols, uses @code{let}
+to bind the same symbol @code{spin} in both sub-patterns.
+The value of the @code{spin} distinguishes the sub-patterns.
+The body form references both symbols (line 5).
 @end enumerate
 
 @node Extending pcase
