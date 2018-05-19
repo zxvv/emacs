@@ -302,7 +302,6 @@ For example:
 
 @c Issue: I use ‘case’ w/ the thought that it being an alias
 @c        to ‘cl-case’ is an ``implementation detail''.
-@c        (However, below i use ‘cl-case’ explicitly.  Hmmm.)
 @c        Is this okay?
 This subsection describes the @code{pcase} macro,
 a hybrid of @code{cond} and @code{case}
@@ -474,10 +473,10 @@ If all sub-patterns match, @code{and} matches.
 @end table
 
 @anchor{pcase-example-0}
-@subheading Example: Advantage Over @code{cl-case}
+@subheading Example: Advantage Over @code{case}
 
 Here's an example that highlights some advantages @code{pcase}
-has over @code{cl-case}
+has over @code{case}
 (@pxref{Conditionals,,,cl,Common Lisp Extensions}).
 
 @example
@@ -495,9 +494,9 @@ has over @code{cl-case}
 @end example
 
 @noindent
-With @code{cl-case}, you would need to explicitly declare a local
+With @code{case}, you would need to explicitly declare a local
 variable @code{code} to hold the return value of @code{get-return-code}.
-Also @code{cl-case} is difficult to use with strings because it
+Also @code{case} is difficult to use with strings because it
 uses @code{eql} for comparison.
 
 @anchor{pcase-example-1}
