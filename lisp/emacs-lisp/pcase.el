@@ -130,8 +130,8 @@ PATTERN matches.  PATTERN can take one of the forms:
   (app FUN PAT)    matches if FUN called on EXPVAL matches PAT.
   (guard BOOLEXP)  matches if BOOLEXP evaluates to non-nil.
   (let PAT EXPR)   matches if EXPR matches PAT.
-  (or PAT...)      matches if any of the patterns matches.
   (and PAT...)     matches if all the patterns match.
+  (or PAT...)      matches if any of the patterns matches.
 
 FUN in `pred' and `app' can take one of the forms:
   SYMBOL  or  (lambda ARGS BODY)

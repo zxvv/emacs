@@ -448,6 +448,13 @@ and matches if @var{exprval} matches @var{pattern}.
 (It is called @code{let} because
 @var{pattern} can bind symbols to values using @var{symbol}.)
 
+@item (and @var{pattern1}@dots{})
+Attempts to match @var{pattern1}@dots{}, in order,
+until one of them fails to match.
+In that case, @code{and} likewise fails to match,
+and the rest of the sub-patterns are not tested.
+If all sub-patterns match, @code{and} matches.
+
 @item (or @var{pattern1} @var{pattern2}@dots{})
 Attempts to match @var{pattern1}, @var{pattern2}, @dots{}, in order,
 until one of them succeeds.
@@ -468,13 +475,6 @@ should all bind the same symbols.
 @c        since the error is raised during BODY-FORMS evaluation.
 @c        Maybe ‘s/on match/and avoid a symbol resolution error &/’
 @c        along w/ ‘s/should/must/’?
-
-@item (and @var{pattern1}@dots{})
-Attempts to match @var{pattern1}@dots{}, in order,
-until one of them fails to match.
-In that case, @code{and} likewise fails to match,
-and the rest of the sub-patterns are not tested.
-If all sub-patterns match, @code{and} matches.
 @end table
 
 @anchor{pcase-example-0}
