@@ -914,18 +914,24 @@ interpreter for a little expression language (note that this example
 requires lexical binding, @pxref{Lexical Binding}):
 
 @example
+@group
 (defun evaluate (form env)
   (pcase form
     (`(add ,x ,y)       (+ (evaluate x env)
                            (evaluate y env)))
+@end group
+@group
     (`(call ,fun ,arg)  (funcall (evaluate fun env)
                                  (evaluate arg env)))
     (`(fn ,arg ,body)   (lambda (val)
                           (evaluate body (cons (cons arg val)
                                                env))))
+@end group
+@group
     ((pred numberp)     form)
     ((pred symbolp)     (cdr (assq form env)))
     (_                  (error "Syntax error: %S" form))))
+@end group
 @end example
 
 @noindent
