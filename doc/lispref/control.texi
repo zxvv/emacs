@@ -836,7 +836,7 @@ Line 1 ``factors out'' the @var{expval} binding with
 The @code{or} begins in the same manner as before (line 2),
 but instead of binding different symbols, uses @code{let}
 to bind the same symbol @code{spin} in both sub-patterns.
-The value of the @code{spin} distinguishes the sub-patterns.
+The value of @code{spin} distinguishes the sub-patterns.
 The body form references both symbols (line 5).
 @end enumerate
 
