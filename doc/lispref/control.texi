@@ -973,11 +973,6 @@ of @var{qpat} in the backquote-style pattern.
 (In the example above, the corresponding element of
 @code{second-elem} is the second element of @var{expval}.)
 
-Note that uses of Q-patterns can be expressed using only core
-patterns, as Q-patterns are implemented on top of core patterns using
-@code{pcase-defmacro}, described below.  However, using Q-patterns will
-in many cases lead to a more readable code.
-
 Here is an example of using @code{pcase} to implement a simple
 interpreter for a little expression language (note that this example
 requires lexical binding, @pxref{Lexical Binding}):
