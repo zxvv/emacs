@@ -739,14 +739,18 @@ i.e., the result of evaluating @code{(* 3 3)}, or 9.
 @item @var{boolean-expression} is evaluated:
 
 @example
+@group
 start:   (< 9 (incf n)        100)
 becomes: (< 9 (setq n (1+ n)) 100)
 becomes: (< 9 (setq n (1+ 9)) 100)
+@end group
+@group
 becomes: (< 9 (setq n 10)     100)
                                    ; @r{side-effect here!}
 becomes: (< 9       n         100) ; @r{@code{n} now bound to 10}
 becomes: (< 9      10         100)
 becomes: t
+@end group
 @end example
 
 @item Because the result of the evaluation is non-@code{nil},
