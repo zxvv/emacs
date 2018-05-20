@@ -855,13 +855,12 @@ This subsection describes @code{pcase-defmacro} and
 that eases structural matching.  (These patterns were
 defined with @code{pcase-defmacro}.)
 
-@c Hmm, shouldn't this be named ‘pcase-defpattern’?
-@c I suppose it's too late now....  --ttn
 @defmac pcase-defmacro name args [doc] &rest body
-Define a new kind of pattern for @code{pcase}.  The new pattern will
-be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
-should describe how to rewrite the pattern @var{name} into some other
-pattern.  The rewriting will be the result of evaluating @var{body}
+Define a new kind of pattern for @code{pcase}, to be invoked
+as @w{@code{(@var{name} @var{actual-args})}}.
+The @code{pcase} macro expands this into a function call
+that evaluates @var{body}, whose job it is to
+rewrite the invoked pattern into some other pattern,
 in an environment where @var{args} are bound to @var{actual-args}.
 
 Additionally, arrange to display @var{doc} along with
