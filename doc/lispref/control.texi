@@ -870,6 +870,39 @@ to stand for the result of
 evaluating @var{expression} (first arg to @code{pcase}).
 @end defmac
 
+@noindent
+Typically, @var{body} rewrites the invoked pattern
+to use more basic patterns.
+Although all patterns eventually reduce to core patterns,
+@code{body} need not use core patterns straight away.
+The following example defines two patterns, named
+@code{less-than} and @code{integer-less-than}.
+
+@example
+@group
+(pcase-defmacro less-than (n)
+  "Matches if EXPVAL is a number less than N."
+  `(pred (> ,n)))
+@end group
+
+@group
+(pcase-defmacro integer-less-than (n)
+  "Matches if EXPVAL is an integer less than N."
+  `(and (pred integerp)
+        (less-than ,n)))
+@end group
+@end example
+
+@noindent
+Note that the docstrings mention @var{args}
+(in this case, only one: @code{n}) in the usual way,
+and also mention @code{EXPVAL} by convention.
+The first rewrite (i.e., @var{body} for @code{less-than})
+uses one core pattern: @code{pred}.
+The second uses two core patterns: @code{and} and @code{pred},
+as well as the newly-defined pattern @code{less-than}.
+Both use a single backquote construct (@pxref{Backquote}).
+
 In addition, you can use backquoted patterns that are more powerful.
 They allow matching @var{expval} against specifications of its
 @emph{structure}.  For example, you can specify that the value must be
