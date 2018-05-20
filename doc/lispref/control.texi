@@ -974,8 +974,10 @@ of @var{qpat} in the backquote-style pattern.
 @code{second-elem} is the second element of @var{expval}.)
 
 Here is an example of using @code{pcase} to implement a simple
-interpreter for a little expression language (note that this example
-requires lexical binding, @pxref{Lexical Binding}):
+interpreter for a little expression language
+(note that this requires lexical binding for the
+lambda expression in the @code{fn} clause to properly
+capture @code{body} and @code{arg} (@pxref{Lexical Binding}):
 
 @example
 @group
