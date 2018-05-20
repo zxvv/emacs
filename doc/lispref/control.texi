@@ -297,6 +297,7 @@ For example:
 
 @node Pattern-Matching Conditional
 @subsection Pattern-Matching Conditional
+@c MAINTAINME: ``subsection'', ``subheading''
 @cindex pcase
 @cindex pattern matching
 
@@ -364,12 +365,11 @@ of the last of @var{body-forms} in the successful clause.
 Otherwise, @code{pcase} evaluates to @code{nil}.
 @end defmac
 
-@c Issue: For presentation, we ‘s/U-pattern/core pattern/g’.
-@c        ISTM (from a quick grep) ``core'' is not overused.
-@c        Is there a better term?
-The rest of this subsection describes the core @var{pattern}
-forms, and concludes with a another Lisp macro you can use to
-extend the core set.
+The rest of this subsection
+describes different forms of core patterns,
+presents some examples,
+and concludes with important caveats on using the
+let-binding facility provided by some pattern forms.
 A core pattern can have the following forms:
 
 @table @code
