@@ -903,12 +903,35 @@ The second uses two core patterns: @code{and} and @code{pred},
 as well as the newly-defined pattern @code{less-than}.
 Both use a single backquote construct (@pxref{Backquote}).
 
-In addition, you can use backquoted patterns that are more powerful.
-They allow matching @var{expval} against specifications of its
-@emph{structure}.  For example, you can specify that the value must be
-a list of 2 elements whose first element is a specific string and the
-second element is any value with a backquoted pattern like
-@code{`("first" ,second-elem)}.
+@c Issue: Should this be split off into its own node/subsection?
+@subheading Backquote-Style Patterns
+@cindex backquote-style patterns
+
+@dfn{Backquote-style patterns} are a powerful set of
+@code{pcase} pattern extensions (created using @code{pcase-defmacro})
+that make it easy to match @var{expval} against
+specifications of its @emph{structure}.
+
+For example, to match @var{expval} that must be a list of two
+elements whose first element is a specific string and the second
+element is any value, you can write a core pattern:
+
+@example
+(and (pred listp)
+     ls
+     (guard (= 2 (length ls)))
+     (guard (string= "first" (car ls)))
+     (let second-elem (cadr ls)))
+@end example
+
+@noindent
+or you can write the equivalent backquote-style pattern,
+which is more concise, resembling the structure of @var{expval},
+and avoids binding @code{ls}:
+
+@example
+`("first" ,second-elem)
+@end example
 
 Backquoted patterns have the form @code{`@var{qpattern}} where
 @var{qpattern} can have the following forms:
@@ -944,8 +967,6 @@ Note that uses of Q-patterns can be expressed using only core
 patterns, as Q-patterns are implemented on top of core patterns using
 @code{pcase-defmacro}, described below.  However, using Q-patterns will
 in many cases lead to a more readable code.
-@c FIXME: There should be an example here showing how a 'pcase' that
-@c uses Q-patterns can be rewritten using core patterns.
 
 Here is an example of using @code{pcase} to implement a simple
 interpreter for a little expression language (note that this example
