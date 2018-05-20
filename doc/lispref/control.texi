@@ -864,8 +864,10 @@ should describe how to rewrite the pattern @var{name} into some other
 pattern.  The rewriting will be the result of evaluating @var{body}
 in an environment where @var{args} are bound to @var{actual-args}.
 
-For documentation consistency, use @code{EXPVAL}
-in @var{doc}, the docstring, to stand for the result of
+Additionally, arrange to display @var{doc} along with
+the docstring of @code{pcase}.
+By convention, @var{doc} should use @code{EXPVAL}
+to stand for the result of
 evaluating @var{expression} (first arg to @code{pcase}).
 @end defmac
 
