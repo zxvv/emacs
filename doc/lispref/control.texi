@@ -927,21 +927,28 @@ elements whose first element is a specific string and the second
 element is any value, you can write a core pattern:
 
 @example
+@group
 (and (pred listp)
      ls
+@end group
+@group
      (guard (= 2 (length ls)))
      (guard (string= "first" (car ls)))
      (let second-elem (cadr ls)))
+@end group
 @end example
 
 @noindent
-or you can write the equivalent backquote-style pattern,
-which is more concise, resembling the structure of @var{expval},
-and avoids binding @code{ls}:
+or you can write the equivalent backquote-style pattern:
 
 @example
 `("first" ,second-elem)
 @end example
+
+@noindent
+The backquote-style pattern is more concise,
+resembles the structure of @var{expval},
+and avoids binding @code{ls}.
 
 A backquote-style pattern has the form @code{`@var{qpat}} where
 @var{qpat} can have the following forms:
