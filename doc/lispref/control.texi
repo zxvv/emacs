@@ -37,8 +37,8 @@ structure constructs (@pxref{Macros}).
 @menu
 * Sequencing::             Evaluation in textual order.
 * Conditionals::           @code{if}, @code{cond}, @code{when}, @code{unless}.
-* Pattern-Matching Conditional::  @code{pcase}, @code{pcase-defmacro}, etc.
 * Combining Conditions::   @code{and}, @code{or}, @code{not}.
+* Pattern-Matching Conditional::  How to use @code{pcase} and friends.
 * Iteration::              @code{while} loops.
 * Generators::             Generic sequences and coroutines.
 * Nonlocal Exits::         Jumping out of a sequence.
@@ -289,12 +289,131 @@ For example:
 @end group
 @end example
 
-@c Issue: This node is between ‘Conditionals’ and ‘Combining Conditions’.
-@c        The latter describes ‘and’ and ‘or’, which have core pattern
-@c        analogs (the so-called ``sequencing patterns'').  That portion
-@c        currently xrefs ‘Combining Conditions’, a forward-ref.
-@c        Question: Should this section (and its subsections) be moved
-@c        after ‘Combining Conditions’ so that the xref is backwards?
+@node Combining Conditions
+@section Constructs for Combining Conditions
+@cindex combining conditions
+
+  This section describes three constructs that are often used together
+with @code{if} and @code{cond} to express complicated conditions.  The
+constructs @code{and} and @code{or} can also be used individually as
+kinds of multiple conditional constructs.
+
+@defun not condition
+This function tests for the falsehood of @var{condition}.  It returns
+@code{t} if @var{condition} is @code{nil}, and @code{nil} otherwise.
+The function @code{not} is identical to @code{null}, and we recommend
+using the name @code{null} if you are testing for an empty list.
+@end defun
+
+@defspec and conditions@dots{}
+The @code{and} special form tests whether all the @var{conditions} are
+true.  It works by evaluating the @var{conditions} one by one in the
+order written.
+
+If any of the @var{conditions} evaluates to @code{nil}, then the result
+of the @code{and} must be @code{nil} regardless of the remaining
+@var{conditions}; so @code{and} returns @code{nil} right away, ignoring
+the remaining @var{conditions}.
+
+If all the @var{conditions} turn out non-@code{nil}, then the value of
+the last of them becomes the value of the @code{and} form.  Just
+@code{(and)}, with no @var{conditions}, returns @code{t}, appropriate
+because all the @var{conditions} turned out non-@code{nil}.  (Think
+about it; which one did not?)
+
+Here is an example.  The first condition returns the integer 1, which is
+not @code{nil}.  Similarly, the second condition returns the integer 2,
+which is not @code{nil}.  The third condition is @code{nil}, so the
+remaining condition is never evaluated.
+
+@example
+@group
+(and (print 1) (print 2) nil (print 3))
+     @print{} 1
+     @print{} 2
+@result{} nil
+@end group
+@end example
+
+Here is a more realistic example of using @code{and}:
+
+@example
+@group
+(if (and (consp foo) (eq (car foo) 'x))
+    (message "foo is a list starting with x"))
+@end group
+@end example
+
+@noindent
+Note that @code{(car foo)} is not executed if @code{(consp foo)} returns
+@code{nil}, thus avoiding an error.
+
+@code{and} expressions can also be written using either @code{if} or
+@code{cond}.  Here's how:
+
+@example
+@group
+(and @var{arg1} @var{arg2} @var{arg3})
+@equiv{}
+(if @var{arg1} (if @var{arg2} @var{arg3}))
+@equiv{}
+(cond (@var{arg1} (cond (@var{arg2} @var{arg3}))))
+@end group
+@end example
+@end defspec
+
+@defspec or conditions@dots{}
+The @code{or} special form tests whether at least one of the
+@var{conditions} is true.  It works by evaluating all the
+@var{conditions} one by one in the order written.
+
+If any of the @var{conditions} evaluates to a non-@code{nil} value, then
+the result of the @code{or} must be non-@code{nil}; so @code{or} returns
+right away, ignoring the remaining @var{conditions}.  The value it
+returns is the non-@code{nil} value of the condition just evaluated.
+
+If all the @var{conditions} turn out @code{nil}, then the @code{or}
+expression returns @code{nil}.  Just @code{(or)}, with no
+@var{conditions}, returns @code{nil}, appropriate because all the
+@var{conditions} turned out @code{nil}.  (Think about it; which one
+did not?)
+
+For example, this expression tests whether @code{x} is either
+@code{nil} or the integer zero:
+
+@example
+(or (eq x nil) (eq x 0))
+@end example
+
+Like the @code{and} construct, @code{or} can be written in terms of
+@code{cond}.  For example:
+
+@example
+@group
+(or @var{arg1} @var{arg2} @var{arg3})
+@equiv{}
+(cond (@var{arg1})
+      (@var{arg2})
+      (@var{arg3}))
+@end group
+@end example
+
+You could almost write @code{or} in terms of @code{if}, but not quite:
+
+@example
+@group
+(if @var{arg1} @var{arg1}
+  (if @var{arg2} @var{arg2}
+    @var{arg3}))
+@end group
+@end example
+
+@noindent
+This is not completely equivalent because it can evaluate @var{arg1} or
+@var{arg2} twice.  By contrast, @code{(or @var{arg1} @var{arg2}
+@var{arg3})} never evaluates any argument more than once.
+@end defspec
+
 @node Pattern-Matching Conditional
 @section Pattern-Matching Conditional
 @cindex pcase
@@ -1045,131 +1164,6 @@ evaluation results:
 (evaluate '(call (fn x (add 1 x)) 2) nil) @result{} 3
 (evaluate '(sub 1 2) nil)                 @result{} error
 @end example
-
-@node Combining Conditions
-@section Constructs for Combining Conditions
-@cindex combining conditions
-
-  This section describes three constructs that are often used together
-with @code{if} and @code{cond} to express complicated conditions.  The
-constructs @code{and} and @code{or} can also be used individually as
-kinds of multiple conditional constructs.
-
-@defun not condition
-This function tests for the falsehood of @var{condition}.  It returns
-@code{t} if @var{condition} is @code{nil}, and @code{nil} otherwise.
-The function @code{not} is identical to @code{null}, and we recommend
-using the name @code{null} if you are testing for an empty list.
-@end defun
-
-@defspec and conditions@dots{}
-The @code{and} special form tests whether all the @var{conditions} are
-true.  It works by evaluating the @var{conditions} one by one in the
-order written.
-
-If any of the @var{conditions} evaluates to @code{nil}, then the result
-of the @code{and} must be @code{nil} regardless of the remaining
-@var{conditions}; so @code{and} returns @code{nil} right away, ignoring
-the remaining @var{conditions}.
-
-If all the @var{conditions} turn out non-@code{nil}, then the value of
-the last of them becomes the value of the @code{and} form.  Just
-@code{(and)}, with no @var{conditions}, returns @code{t}, appropriate
-because all the @var{conditions} turned out non-@code{nil}.  (Think
-about it; which one did not?)
-
-Here is an example.  The first condition returns the integer 1, which is
-not @code{nil}.  Similarly, the second condition returns the integer 2,
-which is not @code{nil}.  The third condition is @code{nil}, so the
-remaining condition is never evaluated.
-
-@example
-@group
-(and (print 1) (print 2) nil (print 3))
-     @print{} 1
-     @print{} 2
-@result{} nil
-@end group
-@end example
-
-Here is a more realistic example of using @code{and}:
-
-@example
-@group
-(if (and (consp foo) (eq (car foo) 'x))
-    (message "foo is a list starting with x"))
-@end group
-@end example
-
-@noindent
-Note that @code{(car foo)} is not executed if @code{(consp foo)} returns
-@code{nil}, thus avoiding an error.
-
-@code{and} expressions can also be written using either @code{if} or
-@code{cond}.  Here's how:
-
-@example
-@group
-(and @var{arg1} @var{arg2} @var{arg3})
-@equiv{}
-(if @var{arg1} (if @var{arg2} @var{arg3}))
-@equiv{}
-(cond (@var{arg1} (cond (@var{arg2} @var{arg3}))))
-@end group
-@end example
-@end defspec
-
-@defspec or conditions@dots{}
-The @code{or} special form tests whether at least one of the
-@var{conditions} is true.  It works by evaluating all the
-@var{conditions} one by one in the order written.
-
-If any of the @var{conditions} evaluates to a non-@code{nil} value, then
-the result of the @code{or} must be non-@code{nil}; so @code{or} returns
-right away, ignoring the remaining @var{conditions}.  The value it
-returns is the non-@code{nil} value of the condition just evaluated.
-
-If all the @var{conditions} turn out @code{nil}, then the @code{or}
-expression returns @code{nil}.  Just @code{(or)}, with no
-@var{conditions}, returns @code{nil}, appropriate because all the
-@var{conditions} turned out @code{nil}.  (Think about it; which one
-did not?)
-
-For example, this expression tests whether @code{x} is either
-@code{nil} or the integer zero:
-
-@example
-(or (eq x nil) (eq x 0))
-@end example
-
-Like the @code{and} construct, @code{or} can be written in terms of
-@code{cond}.  For example:
-
-@example
-@group
-(or @var{arg1} @var{arg2} @var{arg3})
-@equiv{}
-(cond (@var{arg1})
-      (@var{arg2})
-      (@var{arg3}))
-@end group
-@end example
-
-You could almost write @code{or} in terms of @code{if}, but not quite:
-
-@example
-@group
-(if @var{arg1} @var{arg1}
-  (if @var{arg2} @var{arg2}
-    @var{arg3}))
-@end group
-@end example
-
-@noindent
-This is not completely equivalent because it can evaluate @var{arg1} or
-@var{arg2} twice.  By contrast, @code{(or @var{arg1} @var{arg2}
-@var{arg3})} never evaluates any argument more than once.
-@end defspec
 
 @node Iteration
 @section Iteration
