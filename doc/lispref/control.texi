@@ -37,6 +37,7 @@ structure constructs (@pxref{Macros}).
 @menu
 * Sequencing::             Evaluation in textual order.
 * Conditionals::           @code{if}, @code{cond}, @code{when}, @code{unless}.
+* Pattern-Matching Conditional::  @code{pcase}, @code{pcase-defmacro}, etc.
 * Combining Conditions::   @code{and}, @code{or}, @code{not}.
 * Iteration::              @code{while} loops.
 * Generators::             Generic sequences and coroutines.
@@ -288,26 +289,24 @@ For example:
 @end group
 @end example
 
-@c Issue: This seems out of place.  It also gives lie to
-@c        ``Emacs Lisp has four conditional forms''.
-@menu
-* Pattern-Matching Conditional::
-* Extending @code{pcase}: Extending pcase.
-@end menu
-
+@c Issue: This node is between ‘Conditionals’ and ‘Combining Conditions’.
+@c        The latter describes ‘and’ and ‘or’, which have core pattern
+@c        analogs (the so-called ``sequencing patterns'').  That portion
+@c        currently xrefs ‘Combining Conditions’, a forward-ref.
+@c        Question: Should this section (and its subsections) be moved
+@c        after ‘Combining Conditions’ so that the xref is backwards?
 @node Pattern-Matching Conditional
-@subsection Pattern-Matching Conditional
-@c MAINTAINME: ``subsection'', ``subheading''
+@section Pattern-Matching Conditional
 @cindex pcase
 @cindex pattern matching
 
 @c Issue: I use ‘case’ w/ the thought that it being an alias
 @c        to ‘cl-case’ is an ``implementation detail''.
 @c        Is this okay?
-This subsection describes the @code{pcase} macro,
+Aside from the four basic conditional forms, Emacs Lisp also
+has a pattern-matching conditional form, the @code{pcase} macro,
 a hybrid of @code{cond} and @code{case}
 that overcomes their limitations.
-For advanced usage information, @xref{Extending pcase}.
 
 @itemize
 @item The @code{cond} form chooses among alternatives
@@ -351,6 +350,17 @@ The concise expression of a predicate is known as a @dfn{pattern}.
 When the predicate, called on the value of the first arg,
 returns non-@code{nil}, the pattern matches the value
 (or sometimes ``the value matches the pattern'').
+
+@menu
+* The @code{pcase} macro: pcase Macro.  Plus examples and caveats.
+* Extending @code{pcase}: Extending pcase.  Define new kinds of patterns.
+* Backquote-Style Patterns: Backquote Patterns.  Structural matching.
+@end menu
+
+@node pcase Macro
+@subsection The @code{pcase} macro
+
+For background, @xref{Pattern-Matching Conditional}.
 
 @defmac pcase expression &rest clauses
 Each clause in @var{clauses} has the form:
@@ -842,18 +852,12 @@ The body form references both symbols (line 5).
 
 @node Extending pcase
 @subsection Extending @code{pcase}
-@cindex pcase, defining new kinds of pattern
-@cindex pattern matching, structural
-@cindex structural pattern matching
+@cindex pcase, defining new kinds of patterns
 
 The @code{pcase} macro supports several kinds of patterns
 (@pxref{Pattern-Matching Conditional}).
 You can add support for other kinds of patterns
 using the @code{pcase-defmacro} macro.
-This subsection describes @code{pcase-defmacro} and
-@dfn{backquote-style patterns}, a set of builtin patterns
-that eases structural matching.  (These patterns were
-defined with @code{pcase-defmacro}.)
 
 @defmac pcase-defmacro name args [doc] &rest body
 Define a new kind of pattern for @code{pcase}, to be invoked
@@ -903,9 +907,15 @@ The second uses two core patterns: @code{and} and @code{pred},
 as well as the newly-defined pattern @code{less-than}.
 Both use a single backquote construct (@pxref{Backquote}).
 
-@c Issue: Should this be split off into its own node/subsection?
-@subheading Backquote-Style Patterns
+@node Backquote Patterns
+@subsection Backquote-Style Patterns
 @cindex backquote-style patterns
+@cindex matching, structural
+@cindex structural matching
+
+This subsection describes @dfn{backquote-style patterns},
+a set of builtin patterns that eases structural matching.
+For background, @xref{Pattern-Matching Conditional}.
 
 @dfn{Backquote-style patterns} are a powerful set of
 @code{pcase} pattern extensions (created using @code{pcase-defmacro})
