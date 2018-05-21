@@ -419,13 +419,13 @@ This is not completely equivalent because it can evaluate @var{arg1} or
 @cindex pcase
 @cindex pattern matching
 
-@c Issue: I use ‘case’ w/ the thought that it being an alias
-@c        to ‘cl-case’ is an ``implementation detail''.
-@c        Is this okay?
 Aside from the four basic conditional forms, Emacs Lisp also
 has a pattern-matching conditional form, the @code{pcase} macro,
 a hybrid of @code{cond} and @code{case}
-that overcomes their limitations.
+(@pxref{Conditionals,,,cl,Common Lisp Extensions})
+that overcomes their limitations and introduces
+the @dfn{pattern matching} programming style.
+First, the limitations:
 
 @itemize
 @item The @code{cond} form chooses among alternatives
@@ -442,7 +442,7 @@ For that, why not use @code{case}?
 @item
 The @code{case} macro chooses among alternatives by evaluating
 the equality of its first argument against a set of specific
-values (@pxref{Conditionals,,,cl,Common Lisp Extensions}).
+values.
 The limitations are two-fold:
 
 @enumerate
