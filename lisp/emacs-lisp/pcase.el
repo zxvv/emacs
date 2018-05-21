@@ -414,8 +414,9 @@ any kind of error."
 Patterns of the form (NAME ...) will be expanded according
 to this macro.
 
-For documentation consistency, use \"EXPVAL\" in the docstring
-to stand for the result of evaluating EXP (first arg to `pcase')."
+By convention, DOC should use \"EXPVAL\" to stand
+for the result of evaluating EXP (first arg to `pcase').
+\n(fn NAME ARGS [DOC] &rest BODY...)"
   (declare (indent 2) (debug defun) (doc-string 3))
   ;; Add the function via `fsym', so that an autoload cookie placed
   ;; on a pcase-defmacro will cause the macro to be loaded on demand.
