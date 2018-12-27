@@ -362,6 +362,48 @@ pattern to search for."
       (user-error "No matches for: %s" regexp))
     (xref--show-xrefs xrefs nil)))
 
+(defun project-files-pipe-grep (project regexp)
+  (pcase-let*
+      ((files (project-files project))
+       (infile (make-temp-file "pftg"))
+       (output (get-buffer-create " *project grep output*"))
+       (`(,grep-re ,file-group ,line-group . ,_) (car grep-regexp-alist))
+       (status nil)
+       (hits nil)
+       (xrefs nil))
+    (with-temp-buffer
+      (insert (mapconcat #'identity files "\0"))
+      ;; FIXME: Try without a temporary file.
+      (write-region (point-min) (point-max) infile))
+    (with-current-buffer output
+      (erase-buffer)
+      (setq status
+            (process-file-shell-command
+             (format "xargs -0 -P 1 grep %s -nHe %s"
+                     (if (and case-fold-search
+                              (isearch-no-upper-case-p regexp t))
+                         "-i"
+                       "")
+                     (shell-quote-argument (xref--regexp-to-extended regexp)))
+             infile
+             t))
+      (goto-char (point-min))
+      (when (and (/= (point-min) (point-max))
+                 (not (looking-at grep-re))
+                 ;; TODO: Show these matches as well somehow?
+                 (not (looking-at "Binary file .* matches")))
+        (user-error "Search failed with status %d: %s" status
+                    (buffer-substring (point-min) (line-end-position))))
+      (while (re-search-forward grep-re nil t)
+        (push (list (string-to-number (match-string line-group))
+                    (match-string file-group)
+                    (buffer-substring-no-properties (point) (line-end-position)))
+              hits)))
+    (setq xrefs (xref--convert-hits (nreverse hits) regexp))
+    (unless xrefs
+      (user-error "No matches for: %s" regexp))
+    (xref--show-xrefs xrefs nil)))
+
 ;;;###autoload
 (defun project-find-file ()
   "Visit a file (with completion) in the current project's roots.
