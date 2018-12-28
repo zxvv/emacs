@@ -362,9 +362,9 @@ pattern to search for."
       (user-error "No matches for: %s" regexp))
     (xref--show-xrefs xrefs nil)))
 
-(defun project-files-pipe-grep (project regexp)
+(defun project-files-pipe-grep (regexp)
   (pcase-let*
-      ((files (project-files project))
+      ((files (project-files (project-current t)))
        (infile (make-temp-file "pftg"))
        (output (get-buffer-create " *project grep output*"))
        (`(,grep-re ,file-group ,line-group . ,_) (car grep-regexp-alist))
