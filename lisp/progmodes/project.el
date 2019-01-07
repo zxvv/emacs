@@ -362,39 +362,34 @@ pattern to search for."
       ((files (project-files (project-current t)))
        (output (get-buffer-create " *project grep output*"))
        (`(,grep-re ,file-group ,line-group . ,_) (car grep-regexp-alist))
-       (command `("xargs" "-0" "grep"
-                  ,@(when (and case-fold-search
-                              (isearch-no-upper-case-p regexp t))
-                      (list "-i"))
-                  "-nHe"
-                  ,(shell-quote-argument (xref--regexp-to-extended regexp))))
+       (status nil)
        (hits nil)
        (xrefs nil)
-       (process nil)
-       (process-connection-type nil))
+       (command (format "xargs -0 -P 1 grep %s -nHe %s"
+                        (if (and case-fold-search
+                                 (isearch-no-upper-case-p regexp t))
+                            "-i"
+                          "")
+                        (shell-quote-argument (xref--regexp-to-extended regexp)))))
     (with-current-buffer output
       (erase-buffer)
-      (setq process
-            (apply
-             #'start-process
-             "project-files-pipe-to-grep"
-             output
-             command))
-      (dolist (f files)
-        (process-send-string process f)
-        (process-send-string process "\0"))
-      (process-send-eof process)
-      (with-local-quit
-        (while (process-live-p process)
-          (accept-process-output process 1)))
-      (when quit-flag
-        (delete-process process))
+      (with-temp-buffer
+        (insert (mapconcat #'identity files "\0"))
+        (setq status
+              (call-process-region (point-min)
+                                   (point-max)
+                                   shell-file-name
+                                   nil
+                                   output
+                                   nil
+                                   shell-command-switch
+                                   command)))
       (goto-char (point-min))
       (when (and (/= (point-min) (point-max))
                  (not (looking-at grep-re))
                  ;; TODO: Show these matches as well somehow?
                  (not (looking-at "Binary file .* matches")))
-        (user-error "Search failed with status %d: %s" (process-exit-status process)
+        (user-error "Search failed with status %d: %s" status
                     (buffer-substring (point-min) (line-end-position))))
       (while (re-search-forward grep-re nil t)
         (push (list (string-to-number (match-string line-group))
