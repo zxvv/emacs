@@ -376,14 +376,13 @@ pattern to search for."
       (with-temp-buffer
         (insert (mapconcat #'identity files "\0"))
         (setq status
-              (call-process-region (point-min)
-                                   (point-max)
-                                   shell-file-name
-                                   nil
-                                   output
-                                   nil
-                                   shell-command-switch
-                                   command)))
+              (project--process-file-region (point-min)
+                                            (point-max)
+                                            shell-file-name
+                                            output
+                                            nil
+                                            shell-command-switch
+                                            command)))
       (goto-char (point-min))
       (when (and (/= (point-min) (point-max))
                  (not (looking-at grep-re))
@@ -400,6 +399,24 @@ pattern to search for."
     (unless xrefs
       (user-error "No matches for: %s" regexp))
     (xref--show-xrefs xrefs nil)))
+
+(defun project--process-file-region (start end program
+                                     &optional buffer display
+                                     &rest args)
+  ;; FIXME: This branching shouldn't be necessary, but
+  ;; call-process-region *is* measurably faster, even for a program
+  ;; doing some actual work (for a period of time). Even though
+  ;; call-process-region also creates a temp file internally
+  ;; (http://lists.gnu.org/archive/html/emacs-devel/2019-01/msg00211.html).
+  (if (not (file-remote-p default-directory))
+      (apply #'call-process-region
+             start end program nil buffer display args)
+    (let ((infile (make-temp-file "ppfr")))
+      (unwind-protect
+          (progn
+            (write-region start end infile nil 'silent)
+            (apply #'process-file program infile buffer display args))
+        (delete-file infile)))))
 
 ;;;###autoload
 (defun project-find-file ()
