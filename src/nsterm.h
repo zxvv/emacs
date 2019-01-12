@@ -664,7 +664,6 @@ typedef id instancetype;
 
    /* offset to the bottom of knob of last mouse down */
    CGFloat last_mouse_offset;
-   float min_portion;
    int pixel_length;
    enum scroll_bar_part last_hit_part;
 
@@ -678,7 +677,7 @@ typedef id instancetype;
    int em_whole;
    }
 
-- (instancetype) initFrame: (NSRect )r window: (Lisp_Object)win;
+- (instancetype)initFrame: (NSRect )r window: (struct window *)win;
 - (void)setFrame: (NSRect)r;
 
 - (instancetype) setPosition: (int) position portion: (int) portion whole: (int) whole;
@@ -689,6 +688,7 @@ typedef id instancetype;
 - (instancetype)condemn;
 - (instancetype)reprieve;
 - (bool)judge;
++ (NSRect)calcRectWithWindow: (struct window *)window horizontal: (BOOL)horizontal;
 + (CGFloat)scrollerWidth;
 @end
 

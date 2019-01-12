@@ -4691,13 +4691,9 @@ ns_set_vertical_scroll_bar (struct window *window,
       External (hook): Update or add scrollbar
    -------------------------------------------------------------------------- */
 {
-  Lisp_Object win;
-  NSRect r, v;
   struct frame *f = XFRAME (WINDOW_FRAME (window));
   EmacsView *view = FRAME_NS_VIEW (f);
   EmacsScroller *bar;
-  int window_y, window_height;
-  int top, left, height, width;
   BOOL update_p = YES;
 
   /* Optimization; display engine sends WAY too many of these.  */
@@ -4719,22 +4715,13 @@ ns_set_vertical_scroll_bar (struct window *window,
 
   NSTRACE ("ns_set_vertical_scroll_bar");
 
-  /* Get dimensions.  */
-  window_box (window, ANY_AREA, 0, &window_y, 0, &window_height);
-  top = window_y;
-  height = window_height;
-  width = NS_SCROLL_BAR_WIDTH (f);
-  left = WINDOW_SCROLL_BAR_AREA_X (window);
-
-  r = NSMakeRect (left, top, width, height);
-  /* The parent view is flipped, so we need to flip y value.  */
-  v = [view frame];
-  r.origin.y = (v.size.height - r.size.height - r.origin.y);
-
-  XSETWINDOW (win, window);
   block_input ();
 
-  /* We want at least 5 lines to display a scrollbar.  */
+  /* We want at least 5 lines to display a scrollbar.
+
+   FIXME: This doesn't seem to do anything.  The scrollbar disappears
+   with or without this code, but either way the space left for the
+   scrollbar doesn't disappear.  */
   if (WINDOW_TOTAL_LINES (window) < 5)
     {
       if (!NILP (window->vertical_scroll_bar))
@@ -4744,32 +4731,21 @@ ns_set_vertical_scroll_bar (struct window *window,
           wset_vertical_scroll_bar (window, Qnil);
           [bar release];
         }
-      ns_clear_frame_area (f, left, top, width, height);
       unblock_input ();
       return;
     }
 
   if (NILP (window->vertical_scroll_bar))
     {
-      if (width > 0 && height > 0)
-	ns_clear_frame_area (f, left, top, width, height);
-
-      bar = [[EmacsScroller alloc] initFrame: r window: win];
+      NSRect r = [EmacsScroller calcRectWithWindow:window horizontal:NO];
+      bar = [[EmacsScroller alloc] initFrame:r window:window];
       wset_vertical_scroll_bar (window, make_mint_ptr (bar));
       update_p = YES;
     }
   else
     {
-      NSRect oldRect;
       bar = XNS_SCROLL_BAR (window->vertical_scroll_bar);
-      oldRect = [bar frame];
-      r.size.width = oldRect.size.width;
-      if (FRAME_LIVE_P (f) && !NSEqualRects (oldRect, r))
-        {
-          if (oldRect.origin.x != r.origin.x)
-              ns_clear_frame_area (f, left, top, width, height);
-          [bar setFrame: r];
-        }
+      [bar setNeedsDisplay:YES];
     }
 
   if (update_p)
@@ -4785,13 +4761,9 @@ ns_set_horizontal_scroll_bar (struct window *window,
       External (hook): Update or add scrollbar.
    -------------------------------------------------------------------------- */
 {
-  Lisp_Object win;
-  NSRect r, v;
   struct frame *f = XFRAME (WINDOW_FRAME (window));
   EmacsView *view = FRAME_NS_VIEW (f);
   EmacsScroller *bar;
-  int top, height, left, width;
-  int window_x, window_width;
   BOOL update_p = YES;
 
   /* Optimization; display engine sends WAY too many of these.  */
@@ -4813,50 +4785,20 @@ ns_set_horizontal_scroll_bar (struct window *window,
 
   NSTRACE ("ns_set_horizontal_scroll_bar");
 
-  /* Get dimensions.  */
-  window_box (window, ANY_AREA, &window_x, 0, &window_width, 0);
-  left = window_x;
-  width = window_width;
-  height = NS_SCROLL_BAR_HEIGHT (f);
-  top = WINDOW_SCROLL_BAR_AREA_Y (window);
-
-  r = NSMakeRect (left, top, width, height);
-  /* The parent view is flipped, so we need to flip y value.  */
-  v = [view frame];
-  r.origin.y = (v.size.height - r.size.height - r.origin.y);
-
-  XSETWINDOW (win, window);
   block_input ();
 
   if (NILP (window->horizontal_scroll_bar))
     {
-      if (width > 0 && height > 0)
-	ns_clear_frame_area (f, left, top, width, height);
-
-      bar = [[EmacsScroller alloc] initFrame: r window: win];
+      NSRect r = [EmacsScroller calcRectWithWindow:window horizontal:YES];
+      bar = [[EmacsScroller alloc] initFrame:r window:window];
       wset_horizontal_scroll_bar (window, make_mint_ptr (bar));
       update_p = YES;
     }
   else
     {
-      NSRect oldRect;
       bar = XNS_SCROLL_BAR (window->horizontal_scroll_bar);
-      oldRect = [bar frame];
-      if (FRAME_LIVE_P (f) && !NSEqualRects (oldRect, r))
-        {
-          if (oldRect.origin.y != r.origin.y)
-            ns_clear_frame_area (f, left, top, width, height);
-          [bar setFrame: r];
-          update_p = YES;
-        }
+      [bar setNeedsDisplay:YES];
     }
-
-  /* If there are both horizontal and vertical scroll-bars they leave
-     a square that belongs to neither. We need to clear it otherwise
-     it fills with junk.  */
-  if (!NILP (window->vertical_scroll_bar))
-    ns_clear_frame_area (f, WINDOW_SCROLL_BAR_AREA_X (window), top,
-                         NS_SCROLL_BAR_HEIGHT (f), height);
 
   if (update_p)
     [bar setPosition: position portion: portion whole: whole];
@@ -6915,8 +6857,6 @@ not_in_argv (NSString *arg)
   NSTRACE ("[EmacsView updateFrameSize:]");
   NSTRACE_SIZE ("Original size", NSMakeSize (oldw, oldh));
   NSTRACE_RECT ("Original frame", wr);
-  NSTRACE_MSG  ("Original columns: %d", cols);
-  NSTRACE_MSG  ("Original rows: %d", rows);
 
   neww = (int)wr.size.width;
   newh = (int)wr.size.height;
@@ -8654,16 +8594,16 @@ not_in_argv (NSString *arg)
   return r;
 }
 
-- (instancetype)initFrame: (NSRect )r window: (Lisp_Object)nwin
+- (instancetype)initFrame: (NSRect)r window: (struct window *)win
 {
   NSTRACE ("[EmacsScroller initFrame: window:]");
 
-  if (r.size.width > r.size.height)
-      horizontal = YES;
+  if (NSWidth (r) > NSHeight (r))
+    horizontal = YES;
   else
-      horizontal = NO;
+    horizontal = NO;
 
-  [super initWithFrame: r/*NSMakeRect (0, 0, 0, 0)*/];
+  [super initWithFrame:r];
   [self setContinuous: YES];
   [self setEnabled: YES];
 
@@ -8676,14 +8616,13 @@ not_in_argv (NSString *arg)
   [self setAutoresizingMask: NSViewMinXMargin | NSViewHeightSizable];
 #endif
 
-  window = XWINDOW (nwin);
+  window = win;
   condemned = NO;
   if (horizontal)
     pixel_length = NSWidth (r);
   else
     pixel_length = NSHeight (r);
   if (pixel_length == 0) pixel_length = 1;
-  min_portion = 20 / pixel_length;
 
   frame = XFRAME (window->frame);
   if (FRAME_LIVE_P (frame))
@@ -8717,9 +8656,64 @@ not_in_argv (NSString *arg)
   else
     pixel_length = NSHeight (newRect);
   if (pixel_length == 0) pixel_length = 1;
-  min_portion = 20 / pixel_length;
   [super setFrame: newRect];
   /* unblock_input (); */
+}
+
+
++ (NSRect)calcRectWithWindow: (struct window *)window horizontal: (BOOL)horizontal
+{
+  struct frame *f = XFRAME (window->frame);
+  EmacsView *view = FRAME_NS_VIEW (f);
+
+  int wx, wy, wwidth, wheight;
+  NSRect r;
+
+  window_box (window, ANY_AREA, &wx, &wy, &wwidth, &wheight);
+  r = NSMakeRect (wx, wy, wwidth, wheight);
+
+  if (horizontal)
+    {
+      r.size.height = NS_SCROLL_BAR_HEIGHT (f);
+      r.origin.y = WINDOW_SCROLL_BAR_AREA_Y (window);
+    }
+  else
+    {
+      r.size.width = NS_SCROLL_BAR_WIDTH (f);
+      r.origin.x = WINDOW_SCROLL_BAR_AREA_X (window);
+    }
+
+  /* The view is flipped.  */
+  r.origin.y = NSHeight ([view frame]) - NSHeight (r) - r.origin.y;
+
+  return r;
+}
+
+
+- (void)viewWillDraw
+{
+  NSRect r;
+
+  if (FRAME_GARBAGED_P (frame))
+    return;
+
+  r = [EmacsScroller calcRectWithWindow:window horizontal:horizontal];
+
+  if (! NSEqualRects ([self frame], r))
+    [self setFrame:r];
+
+  /* If there are both horizontal and vertical scroll-bars they leave
+     a square that belongs to neither. We need to clear it otherwise
+     it fills with junk.  */
+  if (horizontal && !NILP (window->vertical_scroll_bar))
+      {
+        EmacsView *view = FRAME_NS_VIEW (frame);
+        NSRect clear = NSMakeRect (WINDOW_SCROLL_BAR_AREA_X (window),
+                                   WINDOW_SCROLL_BAR_AREA_Y (window),
+                                   NS_SCROLL_BAR_WIDTH (frame),
+                                   NS_SCROLL_BAR_HEIGHT (frame));
+        [view setNeedsDisplayInRect:clear];
+      }
 }
 
 
@@ -8829,7 +8823,6 @@ not_in_argv (NSString *arg)
     {
       float pos;
       CGFloat por;
-      portion = max ((float)whole*min_portion/pixel_length, portion);
       pos = (float)position / (whole - portion);
       por = (CGFloat)portion/whole;
 #ifdef NS_IMPL_COCOA
