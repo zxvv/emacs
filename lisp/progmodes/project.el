@@ -365,7 +365,7 @@ pattern to search for."
        (status nil)
        (hits nil)
        (xrefs nil)
-       (command (format "xargs -0 -P 1 grep %s -nHe %s"
+       (command (format "xargs -0 grep %s -nHe %s"
                         (if (and case-fold-search
                                  (isearch-no-upper-case-p regexp t))
                             "-i"
