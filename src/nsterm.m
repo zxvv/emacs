@@ -687,40 +687,6 @@ ns_release_autorelease_pool (void *pool)
 }
 
 
-#ifdef NS_IMPL_COCOA
-/* Disabling screen updates can be used to make several actions appear
-   "atomic" to the end user.  It seems some actions can still update
-   the display, though.
-
-   When we re-enable screen updates the number of calls to
-   NSEnableScreenUpdates should match the number to
-   NSDisableScreenUpdates.
-
-   We use these functions to prevent the user seeing a blank frame
-   after it has been resized.  x_set_window_size disables updates and
-   when redisplay completes unwind_redisplay enables them again
-   (bug#30699).  */
-
-static void
-ns_disable_screen_updates (void)
-{
-  NSDisableScreenUpdates ();
-  disable_screen_updates_count++;
-}
-
-void
-ns_enable_screen_updates (void)
-/* Re-enable screen updates.  Called from unwind_redisplay.  */
-{
-  while (disable_screen_updates_count > 0)
-    {
-      NSEnableScreenUpdates ();
-      disable_screen_updates_count--;
-    }
-}
-#endif
-
-
 static BOOL
 ns_menu_bar_should_be_hidden (void)
 /* True, if the menu bar should be hidden.  */
@@ -1802,15 +1768,6 @@ x_set_window_size (struct frame *f,
 
   block_input ();
 
-#ifdef NS_IMPL_COCOA
-  /* To prevent showing the user a blank frame, stop updates being
-     flushed to the screen until after redisplay has completed.  This
-     breaks live resize (resizing with a mouse), so don't do it if
-     we're in a live resize loop.  */
-  if (![view inLiveResize])
-    ns_disable_screen_updates ();
-#endif
-
   if (pixelwise)
     {
       pixelwidth = FRAME_TEXT_TO_PIXEL_WIDTH (f, width);
@@ -1824,9 +1781,6 @@ x_set_window_size (struct frame *f,
 
   wr.size.width = pixelwidth + f->border_width;
   wr.size.height = pixelheight;
-  if (! [view isFullscreen])
-    wr.size.height += FRAME_NS_TITLEBAR_HEIGHT (f)
-      + FRAME_TOOLBAR_HEIGHT (f);
 
   /* Do not try to constrain to this screen.  We may have multiple
      screens, and want Emacs to span those.  Constraining to screen
@@ -1844,9 +1798,12 @@ x_set_window_size (struct frame *f,
 	   make_fixnum (FRAME_NS_TITLEBAR_HEIGHT (f)),
 	   make_fixnum (FRAME_TOOLBAR_HEIGHT (f))));
 
-  [window setFrame: wr display: YES];
+  change_frame_size (f,
+                     FRAME_PIXEL_TO_TEXT_WIDTH (f, pixelwidth),
+                     FRAME_PIXEL_TO_TEXT_HEIGHT (f, pixelheight),
+                     0, 0, 0, 1);
+  SET_FRAME_GARBAGED (f);
 
-  [view updateFrameSize: NO];
   unblock_input ();
 }
 
@@ -6943,12 +6900,14 @@ not_in_argv (NSString *arg)
   return NO;
 }
 
+/* FIXME: I think we should merge updateFrameSize with
+   windowDidResize, as there's no good reason to call updateFrameSize
+   from anywhere else.  */
+
 - (void) updateFrameSize: (BOOL) delay
 {
   NSWindow *window = [self window];
-  NSRect wr = [window frame];
-  int extra = 0;
-  int oldc = cols, oldr = rows;
+  NSRect wr = [[window contentView] frame];
   int oldw = FRAME_PIXEL_WIDTH (emacsframe);
   int oldh = FRAME_PIXEL_HEIGHT (emacsframe);
   int neww, newh;
@@ -6959,57 +6918,12 @@ not_in_argv (NSString *arg)
   NSTRACE_MSG  ("Original columns: %d", cols);
   NSTRACE_MSG  ("Original rows: %d", rows);
 
-  if (! [self isFullscreen])
-    {
-      int toolbar_height;
-#ifdef NS_IMPL_GNUSTEP
-      // GNUstep does not always update the tool bar height.  Force it.
-      if (toolbar && [toolbar isVisible])
-          update_frame_tool_bar (emacsframe);
-#endif
-
-      toolbar_height = FRAME_TOOLBAR_HEIGHT (emacsframe);
-      if (toolbar_height < 0)
-        toolbar_height = 35;
-
-      extra = FRAME_NS_TITLEBAR_HEIGHT (emacsframe)
-        + toolbar_height;
-    }
-
-  if (wait_for_tool_bar)
-    {
-      /* The toolbar height is always 0 in fullscreen and undecorated
-         frames, so don't wait for it to become available.  */
-      if (FRAME_TOOLBAR_HEIGHT (emacsframe) == 0
-          && FRAME_UNDECORATED (emacsframe) == false
-          && ! [self isFullscreen])
-        {
-          NSTRACE_MSG ("Waiting for toolbar");
-          return;
-        }
-      wait_for_tool_bar = NO;
-    }
-
-  neww = (int)wr.size.width - emacsframe->border_width;
-  newh = (int)wr.size.height - extra;
+  neww = (int)wr.size.width;
+  newh = (int)wr.size.height;
 
   NSTRACE_SIZE ("New size", NSMakeSize (neww, newh));
-  NSTRACE_MSG ("FRAME_TOOLBAR_HEIGHT: %d", FRAME_TOOLBAR_HEIGHT (emacsframe));
-  NSTRACE_MSG ("FRAME_NS_TITLEBAR_HEIGHT: %d", FRAME_NS_TITLEBAR_HEIGHT (emacsframe));
 
-  cols = FRAME_PIXEL_WIDTH_TO_TEXT_COLS (emacsframe, neww);
-  rows = FRAME_PIXEL_HEIGHT_TO_TEXT_LINES (emacsframe, newh);
-
-  if (cols < MINWIDTH)
-    cols = MINWIDTH;
-
-  if (rows < MINHEIGHT)
-    rows = MINHEIGHT;
-
-  NSTRACE_MSG ("New columns: %d", cols);
-  NSTRACE_MSG ("New rows: %d", rows);
-
-  if (oldr != rows || oldc != cols || neww != oldw || newh != oldh)
+  if (neww != oldw || newh != oldh)
     {
       NSView *view = FRAME_NS_VIEW (emacsframe);
 
@@ -7019,18 +6933,6 @@ not_in_argv (NSString *arg)
                          0, delay, 0, 1);
       SET_FRAME_GARBAGED (emacsframe);
       cancel_mouse_face (emacsframe);
-
-      /* The next two lines set the frame to the same size as we've
-         already set above.  We need to do this when we switch back
-         from non-native fullscreen, in other circumstances it appears
-         to be a noop.  (bug#28872) */
-      wr = NSMakeRect (0, 0, neww, newh);
-      [view setFrame: wr];
-
-      // To do: consider using [NSNotificationCenter postNotificationName:].
-      [self windowDidMove: // Update top/left.
-	      [NSNotification notificationWithName:NSWindowDidMoveNotification
-					    object:[view window]]];
     }
   else
     {
@@ -7041,6 +6943,7 @@ not_in_argv (NSString *arg)
 - (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
 /* Normalize frame to gridded text size.  */
 {
+  int rows, cols;
   int extra = 0;
 
   NSTRACE ("[EmacsView windowWillResize:toSize: " NSTRACE_FMT_SIZE "]",
@@ -7167,20 +7070,7 @@ not_in_argv (NSString *arg)
 
   NSTRACE_RECT ("frame", [[notification object] frame]);
 
-#ifdef NS_IMPL_GNUSTEP
-  NSWindow *theWindow = [notification object];
-
-   /* In GNUstep, at least currently, it's possible to get a didResize
-      without getting a willResize, therefore we need to act as if we got
-      the willResize now.  */
-  NSSize sz = [theWindow frame].size;
-  sz = [self windowWillResize: theWindow toSize: sz];
-#endif /* NS_IMPL_GNUSTEP */
-
-  if (cols > 0 && rows > 0)
-    {
-      [self updateFrameSize: YES];
-    }
+  [self updateFrameSize: YES];
 
   ns_send_appdefined (-1);
 }
@@ -8156,11 +8046,36 @@ not_in_argv (NSString *arg)
 
 - (void)viewWillDraw
 {
+  NSWindow *window = [self window];
+  NSSize curSize = [[window contentView] frame].size;
+  NSSize newSize = NSMakeSize (FRAME_PIXEL_WIDTH (emacsframe),
+                               FRAME_PIXEL_HEIGHT (emacsframe));
+
   /* If the frame has been garbaged there's no point in redrawing
-     anything.  */
+     anything.  Bailing out here saves us the embarassment of having
+     drawRect: blanking bits of the frame that we are unable to
+     redraw.  */
   if (FRAME_GARBAGED_P (emacsframe))
-    [self setNeedsDisplay:NO];
+    {
+      [self setNeedsDisplay:NO];
+      return;
+    }
+
+  /* If Emacs thinks the frame should be one size, but it's really
+     another, resize it before drawing to it.  */
+  if (! NSEqualSizes (curSize, newSize))
+    {
+      /* FIXME: This resizes from the bottom of the frame instead of
+         the top.  I guess we have to reposition the frame's
+         origin.  */
+      [window setContentSize:newSize];
+
+      [self windowDidMove: // Update top/left.
+	      [NSNotification notificationWithName:NSWindowDidMoveNotification
+					    object:window]];
+    }
 }
+
 
 - (void)drawRect: (NSRect)rect
 {
@@ -8399,13 +8314,6 @@ not_in_argv (NSString *arg)
   return self;
 }
 
-
-- (void) setRows: (int) r andColumns: (int) c
-{
-  NSTRACE ("[EmacsView setRows:%d andColumns:%d]", r, c);
-  rows = r;
-  cols = c;
-}
 
 - (int) fullscreenState
 {

@@ -418,7 +418,6 @@ typedef id instancetype;
    BOOL fs_is_native;
 @public
    struct frame *emacsframe;
-   int rows, cols;
    int scrollbarsNeedingUpdate;
    EmacsToolbar *toolbar;
    NSRect ns_userRect;
@@ -437,7 +436,6 @@ typedef id instancetype;
 /* Emacs-side interface */
 - (instancetype) initFrameFromEmacs: (struct frame *) f;
 - (void) createToolbar: (struct frame *)f;
-- (void) setRows: (int) r andColumns: (int) c;
 - (void) setWindowClosing: (BOOL)closing;
 - (EmacsToolbar *) toolbar;
 - (void) deleteWorkingText;
