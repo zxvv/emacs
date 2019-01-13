@@ -679,6 +679,7 @@ typedef id instancetype;
 
 - (instancetype)initFrame: (NSRect )r window: (struct window *)win;
 - (void)setFrame: (NSRect)r;
+- (void)updatePosition;
 
 - (instancetype) setPosition: (int) position portion: (int) portion whole: (int) whole;
 - (int) checkSamePosition: (int)position portion: (int)portion

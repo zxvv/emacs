@@ -2687,22 +2687,6 @@ ns_get_shifted_character (NSEvent *event)
    ========================================================================== */
 
 
-static void
-ns_redraw_scroll_bars (struct frame *f)
-{
-  int i;
-  id view;
-  NSArray *subviews = [[FRAME_NS_VIEW (f) superview] subviews];
-  NSTRACE ("ns_redraw_scroll_bars");
-  for (i =[subviews count]-1; i >= 0; i--)
-    {
-      view = [subviews objectAtIndex: i];
-      if (![view isKindOfClass: [EmacsScroller class]]) continue;
-      [view display];
-    }
-}
-
-
 void
 ns_clear_frame (struct frame *f)
 /* --------------------------------------------------------------------------
@@ -2730,9 +2714,6 @@ ns_clear_frame (struct frame *f)
                                 (FACE_FROM_ID (f, DEFAULT_FACE_ID)), f) set];
       NSRectFill (r);
       ns_reset_clipping (f);
-
-      /* as of 2006/11 or so this is now needed */
-      ns_redraw_scroll_bars (f);
     }
   unblock_input ();
 }
@@ -4717,11 +4698,7 @@ ns_set_vertical_scroll_bar (struct window *window,
 
   block_input ();
 
-  /* We want at least 5 lines to display a scrollbar.
-
-   FIXME: This doesn't seem to do anything.  The scrollbar disappears
-   with or without this code, but either way the space left for the
-   scrollbar doesn't disappear.  */
+  /* We want at least 5 lines to display a scrollbar.  */
   if (WINDOW_TOTAL_LINES (window) < 5)
     {
       if (!NILP (window->vertical_scroll_bar))
@@ -4743,10 +4720,7 @@ ns_set_vertical_scroll_bar (struct window *window,
       update_p = YES;
     }
   else
-    {
-      bar = XNS_SCROLL_BAR (window->vertical_scroll_bar);
-      [bar setNeedsDisplay:YES];
-    }
+    bar = XNS_SCROLL_BAR (window->vertical_scroll_bar);
 
   if (update_p)
     [bar setPosition: position portion: portion whole: whole];
@@ -4795,10 +4769,7 @@ ns_set_horizontal_scroll_bar (struct window *window,
       update_p = YES;
     }
   else
-    {
-      bar = XNS_SCROLL_BAR (window->horizontal_scroll_bar);
-      [bar setNeedsDisplay:YES];
-    }
+    bar = XNS_SCROLL_BAR (window->horizontal_scroll_bar);
 
   if (update_p)
     [bar setPosition: position portion: portion whole: whole];
@@ -4813,18 +4784,11 @@ ns_condemn_scroll_bars (struct frame *f)
      at next call to judge_scroll_bars, except for those redeemed.
    -------------------------------------------------------------------------- */
 {
-  int i;
-  id view;
-  NSArray *subviews = [[FRAME_NS_VIEW (f) superview] subviews];
-
   NSTRACE ("ns_condemn_scroll_bars");
 
-  for (i =[subviews count]-1; i >= 0; i--)
-    {
-      view = [subviews objectAtIndex: i];
-      if ([view isKindOfClass: [EmacsScroller class]])
-        [view condemn];
-    }
+  for (id view in [FRAME_NS_VIEW (f) subviews])
+    if ([view isKindOfClass: [EmacsScroller class]])
+      [view condemn];
 }
 
 
@@ -4860,16 +4824,16 @@ ns_judge_scroll_bars (struct frame *f)
      redeemed after call to condemn_scroll_bars.
    -------------------------------------------------------------------------- */
 {
-  int i;
-  id view;
   EmacsView *eview = FRAME_NS_VIEW (f);
-  NSArray *subviews = [[eview superview] subviews];
   BOOL removed = NO;
 
+  /* The NSArray returned by subviews is mutable and is modifed when
+     we judge a scrollbar, so take a copy, which we must release.  */
+  NSArray *subviews = [[[eview subviews] copy] autorelease];
+
   NSTRACE ("ns_judge_scroll_bars");
-  for (i = [subviews count]-1; i >= 0; --i)
+  for (id view in subviews)
     {
-      view = [subviews objectAtIndex: i];
       if (![view isKindOfClass: [EmacsScroller class]]) continue;
       if ([view judge])
         removed = YES;
@@ -7628,8 +7592,6 @@ not_in_argv (NSString *arg)
     {
       [toolbar setVisible:YES];
       update_frame_tool_bar (emacsframe);
-      [self updateFrameSize:YES];
-      [[self window] display];
     }
   else
     [toolbar setVisible:NO];
@@ -7795,22 +7757,22 @@ not_in_argv (NSString *arg)
 #endif
         }
 
-      [w setContentView:[fw contentView]];
-      [w setBackgroundColor: col];
-      if ([col alphaComponent] != (EmacsCGFloat) 1.0)
-        [w setOpaque: NO];
-
-      f->border_width = bwidth;
-
       // To do: consider using [NSNotificationCenter postNotificationName:] to
       // send notifications.
 
       [self windowWillExitFullScreen];
       [fw setFrame: [w frame] display:YES animate:ns_use_fullscreen_animation];
       [fw close];
+
+      [w setContentView:self];
+      [w setBackgroundColor: col];
+      if ([col alphaComponent] != (EmacsCGFloat) 1.0)
+        [w setOpaque: NO];
+
+      f->border_width = bwidth;
       [w makeKeyAndOrderFront:NSApp];
       [self windowDidExitFullScreen];
-      [self updateFrameSize:YES];
+      [self setNeedsDisplay:YES];
     }
 }
 
@@ -8013,6 +7975,12 @@ not_in_argv (NSString *arg)
       [window setContentSize:newSize];
       [window setFrameTopLeftPoint:topLeft];
     }
+
+  /* I keep losing the scrollbars!  This is the last chance to make
+     sure they're in the right place.  */
+  for (id view in [self subviews])
+    if ([view isKindOfClass:[EmacsScroller class]])
+      [view updatePosition];
 }
 
 
@@ -8606,14 +8574,11 @@ not_in_argv (NSString *arg)
   [self setContinuous: YES];
   [self setEnabled: YES];
 
-  /* Ensure auto resizing of scrollbars occurs within the emacs frame's view
-     locked against the top and bottom edges, and right edge on macOS, where
-     scrollers are on right.  */
-#ifdef NS_IMPL_GNUSTEP
-  [self setAutoresizingMask: NSViewMaxXMargin | NSViewHeightSizable];
-#else
-  [self setAutoresizingMask: NSViewMinXMargin | NSViewHeightSizable];
-#endif
+  /* If we don't set this then the scrollbars stay still during live
+     resize, which looks rubbish.  Not that this is much better.
+
+     FIXME: Don't display the scrollbars at all during live resize.  */
+  [self setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
 
   window = win;
   condemned = NO;
@@ -8636,7 +8601,7 @@ not_in_argv (NSString *arg)
       for (i =[subs count]-1; i >= 0; i--)
         if ([[subs objectAtIndex: i] isKindOfClass: [EmacsScroller class]])
           view->scrollbarsNeedingUpdate++;
-      [sview addSubview: self];
+      [view addSubview: self];
     }
 
   /* [self setFrame: r]; */
@@ -8657,6 +8622,19 @@ not_in_argv (NSString *arg)
   if (pixel_length == 0) pixel_length = 1;
   [super setFrame: newRect];
   /* unblock_input (); */
+}
+
+
+/* Let the scroller calculate its own position.  */
+- (void)updatePosition
+{
+  NSTRACE ("[EmacsScroller updatePosition]");
+
+  NSRect r = [EmacsScroller calcRectWithWindow:window
+                                    horizontal:horizontal];
+
+  if (! NSEqualRects ([self frame], r))
+    [self setFrame:r];
 }
 
 
@@ -8682,27 +8660,16 @@ not_in_argv (NSString *arg)
       r.origin.x = WINDOW_SCROLL_BAR_AREA_X (window);
     }
 
-  /* The view is flipped.  */
-  r.origin.y = NSHeight ([view frame]) - NSHeight (r) - r.origin.y;
-
   return r;
 }
 
 
 - (void)viewWillDraw
 {
-  NSRect r;
-
-  if (FRAME_GARBAGED_P (frame))
-    return;
-
-  r = [EmacsScroller calcRectWithWindow:window horizontal:horizontal];
-
-  if (! NSEqualRects ([self frame], r))
-    [self setFrame:r];
+  NSTRACE ("[EmacsScroller viewWillDraw]");
 
   /* If there are both horizontal and vertical scroll-bars they leave
-     a square that belongs to neither. We need to clear it otherwise
+     a square that belongs to neither.  We need to clear it otherwise
      it fills with junk.  */
   if (horizontal && !NILP (window->vertical_scroll_bar))
       {
@@ -8719,6 +8686,7 @@ not_in_argv (NSString *arg)
 - (void)dealloc
 {
   NSTRACE ("[EmacsScroller dealloc]");
+
   if (window)
     {
       if (horizontal)
