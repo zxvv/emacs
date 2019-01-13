@@ -8005,14 +8005,13 @@ not_in_argv (NSString *arg)
      another, resize it before drawing to it.  */
   if (! NSEqualSizes (curSize, newSize))
     {
-      /* FIXME: This resizes from the bottom of the frame instead of
-         the top.  I guess we have to reposition the frame's
-         origin.  */
-      [window setContentSize:newSize];
+      NSRect frame = [window frame];
+      NSPoint topLeft = NSMakePoint (NSMinX (frame), NSMaxY (frame));
 
-      [self windowDidMove: // Update top/left.
-	      [NSNotification notificationWithName:NSWindowDidMoveNotification
-					    object:window]];
+      /* This resizes such that the top edge of the frame moves, so we
+         need to reset the top-left origin.  */
+      [window setContentSize:newSize];
+      [window setFrameTopLeftPoint:topLeft];
     }
 }
 
