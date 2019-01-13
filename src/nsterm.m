@@ -2069,16 +2069,6 @@ ns_fullscreen_hook (struct frame *f)
   if (!FRAME_VISIBLE_P (f))
     return;
 
-   if (! [view fsIsNative] && f->want_fullscreen == FULLSCREEN_BOTH)
-    {
-      /* Old style fs don't initiate correctly if created from
-         init/default-frame alist, so use a timer (not nice...).  */
-      [NSTimer scheduledTimerWithTimeInterval: 0.5 target: view
-                                     selector: @selector (handleFS)
-                                     userInfo: nil repeats: NO];
-      return;
-    }
-
   block_input ();
   [view handleFS];
   unblock_input ();
@@ -7737,7 +7727,7 @@ not_in_argv (NSString *arg)
       r = [fw frameRectForContentRect:[screen frame]];
       [fw setFrame: r display:YES animate:ns_use_fullscreen_animation];
       [self windowDidEnterFullScreen];
-      [fw display];
+      [self setNeedsDisplay:YES];
     }
   else
     {
