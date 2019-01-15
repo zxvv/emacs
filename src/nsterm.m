@@ -821,7 +821,6 @@ ns_row_rect (struct window *w, struct glyph_row *row,
                enum glyph_row_area area)
 /* Get the row as an NSRect.  */
 {
-  struct frame *f = XFRAME (WINDOW_FRAME (w));
   NSRect rect;
   int window_x, window_y, window_width;
 
@@ -5194,7 +5193,7 @@ ns_term_init (Lisp_Object display_name)
           }
 
         /* FIXME: Report any errors writing the color file below.  */
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101100
+#if defined (NS_IMPL_COCOA) && MAC_OS_X_VERSION_MAX_ALLOWED >= 101100
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 101100
         if ([cl respondsToSelector:@selector(writeToURL:error:)])
 #endif
@@ -6829,8 +6828,6 @@ not_in_argv (NSString *arg)
 
   if (neww != oldw || newh != oldh)
     {
-      NSView *view = FRAME_NS_VIEW (emacsframe);
-
       change_frame_size (emacsframe,
                          FRAME_PIXEL_TO_TEXT_WIDTH (emacsframe, neww),
                          FRAME_PIXEL_TO_TEXT_HEIGHT (emacsframe, newh),
@@ -8641,7 +8638,6 @@ not_in_argv (NSString *arg)
 + (NSRect)calcRectWithWindow: (struct window *)window horizontal: (BOOL)horizontal
 {
   struct frame *f = XFRAME (window->frame);
-  EmacsView *view = FRAME_NS_VIEW (f);
 
   int wx, wy, wwidth, wheight;
   NSRect r;
