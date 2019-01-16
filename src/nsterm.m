@@ -2734,36 +2734,6 @@ ns_clear_frame_area (struct frame *f, int x, int y, int width, int height)
     }
 }
 
-static void
-ns_copy_bits (struct frame *f, NSRect src, NSRect dest)
-{
-  NSSize delta = NSMakeSize (dest.origin.x - src.origin.x,
-                             dest.origin.y - src.origin.y);
-  NSTRACE ("ns_copy_bits");
-
-  if (FRAME_NS_VIEW (f))
-    {
-      hide_bell();              // Ensure the bell image isn't scrolled.
-
-      /* FIXME: scrollRect:by: is deprecated in macOS 10.14.  There is
-         no obvious replacement so we may have to come up with our own.  */
-      [FRAME_NS_VIEW (f) scrollRect: src by: delta];
-
-#ifdef NS_IMPL_COCOA
-      /* As far as I can tell from the documentation, scrollRect:by:,
-         above, should copy the dirty rectangles from our source
-         rectangle to our destination, however it appears it clips the
-         operation to src.  As a result we need to use
-         translateRectsNeedingDisplayInRect:by: below, and we have to
-         union src and dest so it can pick up the dirty rectangles,
-         and place them, as it also clips to the rectangle.
-
-         FIXME: We need a GNUstep equivalent.  */
-      [FRAME_NS_VIEW (f) translateRectsNeedingDisplayInRect:NSUnionRect (src, dest)
-                                                         by:delta];
-#endif
-    }
-}
 
 static void
 ns_scroll_run (struct window *w, struct run *run)
@@ -2809,18 +2779,13 @@ ns_scroll_run (struct window *w, struct run *run)
   if (height == 0)
       return;
 
-  block_input ();
-
-  x_clear_cursor (w);
-
-  {
-    NSRect srcRect = NSMakeRect (x, from_y, width, height);
-    NSRect dstRect = NSMakeRect (x, to_y, width, height);
-
-    ns_copy_bits (f, srcRect , dstRect);
-  }
-
-  unblock_input ();
+  /* FIXME: When we copy the contents of the view it happens before we
+     have a chance to turn off the cursor. I also can't work out how
+     to do a straight copy of the contents of an NSView in macOS >
+     10.10, so just mark the destination as dirty. There must be a way
+     to do this properly.  */
+  [FRAME_NS_VIEW (f)
+      setNeedsDisplayInRect:NSMakeRect (x, to_y, width, height)];
 }
 
 
