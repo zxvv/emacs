@@ -1912,10 +1912,6 @@ determines whether case is significant or ignored.  */)
 #undef EQUAL
 #define USE_HEURISTIC
 
-#ifdef USE_HEURISTIC
-#define DIFFSEQ_HEURISTIC
-#endif
-
 /* Counter used to rarely_quit in replace-buffer-contents.  */
 static unsigned short rbc_quitcounter;
 
@@ -1951,16 +1947,19 @@ static bool buffer_chars_equal (struct context *, OFFSET, OFFSET);
 #include "diffseq.h"
 
 DEFUN ("replace-buffer-contents", Freplace_buffer_contents,
-       Sreplace_buffer_contents, 1, 1, "bSource buffer: ",
+       Sreplace_buffer_contents, 1, 2, "bSource buffer: ",
        doc: /* Replace accessible portion of current buffer with that of SOURCE.
 SOURCE can be a buffer or a string that names a buffer.
 Interactively, prompt for SOURCE.
+The optional argument MAX-COSTS defines the maximum costs of the
+difference computation.  If the costs are too high, heuristics are
+used to provide a much faster but suboptimal solution.
 As far as possible the replacement is non-destructive, i.e. existing
 buffer contents, markers, properties, and overlays in the current
 buffer stay intact.
 Warning: this function can be slow if there's a large number of small
 differences between the two buffers.  */)
-  (Lisp_Object source)
+  (Lisp_Object source, Lisp_Object max_costs)
 {
   struct buffer *a = current_buffer;
   Lisp_Object source_buffer = Fget_buffer (source);
@@ -2007,6 +2006,12 @@ differences between the two buffers.  */)
   ptrdiff_t *buffer;
   USE_SAFE_ALLOCA;
   SAFE_NALLOCA (buffer, 2, diags);
+
+  if (NILP (max_costs))
+    XSETFASTINT (max_costs, 1000000);
+  else
+    CHECK_FIXNUM (max_costs);
+
   /* Micro-optimization: Casting to size_t generates much better
      code.  */
   ptrdiff_t del_bytes = (size_t) size_a / CHAR_BIT + 1;
@@ -2022,11 +2027,9 @@ differences between the two buffers.  */)
     .insertions = SAFE_ALLOCA (ins_bytes),
     .fdiag = buffer + size_b + 1,
     .bdiag = buffer + diags + size_b + 1,
-#ifdef DIFFSEQ_HEURISTIC
     .heuristic = true,
-#endif
     /* FIXME: Find a good number for .too_expensive.  */
-    .too_expensive = 64,
+    .too_expensive = XFIXNUM (max_costs)
   };
   memclear (ctx.deletions, del_bytes);
   memclear (ctx.insertions, ins_bytes);

@@ -749,7 +749,10 @@ With prefix argument MINIMIZE, minimize it instead."
         (json-object-type 'alist))
     (replace-region-contents
      begin end
-     (lambda () (json-encode (json-read))))))
+     (lambda () (json-encode (json-read)))
+     ;; FIXME: What's a good value here?  Can we use something better,
+     ;; e.g., by deriving a value from the size of the region?
+     64)))
 
 (defun json-pretty-print-buffer-ordered (&optional minimize)
   "Pretty-print current buffer with object keys ordered.
