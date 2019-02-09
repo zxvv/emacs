@@ -49,10 +49,13 @@
 ;; 2008-02-21 - Installed in GNU Emacs.
 ;; 2011-10-17 - Patch `json-alist-p' and `json-plist-p' to avoid recursion -tzz
 ;; 2012-10-25 - Added pretty-printed reformatting -Ryan Crum (ryan@ryancrum.org)
+;; 2019-02-02 - Pretty-printing now uses replace-region-contents and support for
+;;              minimization -tsdh
 
 ;;; Code:
 
 (require 'map)
+(require 'subr-x)
 
 ;; Parameters
 
