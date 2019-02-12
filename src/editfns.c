@@ -1933,13 +1933,15 @@ static unsigned short rbc_quitcounter;
   /* Bit vectors recording for each character whether it was deleted
      or inserted.  */                           \
   unsigned char *deletions;                     \
-  unsigned char *insertions;
+  unsigned char *insertions;                    \
+  unsigned int diffs;
 
-#define NOTE_DELETE(ctx, xoff) set_bit ((ctx)->deletions, (xoff))
-#define NOTE_INSERT(ctx, yoff) set_bit ((ctx)->insertions, (yoff))
+#define NOTE_DELETE(ctx, xoff) set_bit ((ctx), (ctx)->deletions, (xoff))
+#define NOTE_INSERT(ctx, yoff) set_bit ((ctx), (ctx)->insertions, (yoff))
+#define EARLY_ABORT(ctx) (ctx)->diffs > Vreplace_buffer_contents_max_diffs
 
 struct context;
-static void set_bit (unsigned char *, OFFSET);
+static void set_bit (struct context *, unsigned char *, OFFSET);
 static bool bit_is_set (const unsigned char *, OFFSET);
 static bool buffer_chars_equal (struct context *, OFFSET, OFFSET);
 
@@ -1951,14 +1953,20 @@ DEFUN ("replace-buffer-contents", Freplace_buffer_contents,
        doc: /* Replace accessible portion of current buffer with that of SOURCE.
 SOURCE can be a buffer or a string that names a buffer.
 Interactively, prompt for SOURCE.
+
 The optional argument MAX-COSTS defines the maximum costs of the
 difference computation.  If the costs are too high, heuristics are
-used to provide a much faster but suboptimal solution.
+used to provide a faster but suboptimal solution.
+
 As far as possible the replacement is non-destructive, i.e. existing
 buffer contents, markers, properties, and overlays in the current
 buffer stay intact.
-Warning: this function can be slow if there's a large number of small
-differences between the two buffers.  */)
+
+Because this function can be very slow if there's a large number of
+differences between the two buffers, it falls back to a plain delete
+and insert if the number of differences is higher than
+`replace-buffer-contents-max-diffs'.  In this case, it returns t.
+Otherwise it returns nil.  */)
   (Lisp_Object source, Lisp_Object max_costs)
 {
   struct buffer *a = current_buffer;
@@ -2036,9 +2044,15 @@ differences between the two buffers.  */)
   /* compareseq requires indices to be zero-based.  We add BEGV back
      later.  */
   bool early_abort = compareseq (0, size_a, 0, size_b, false, &ctx);
-  /* Since we didn’t define EARLY_ABORT, we should never abort
-     early.  */
-  eassert (! early_abort);
+
+  if (early_abort)
+    {
+      message1 ("compareseq returned early");
+      del_range (min_a, ZV);
+      Finsert_buffer_substring (source, Qnil,Qnil);
+      SAFE_FREE_UNBIND_TO (count, Qnil);
+      return Qt;
+    }
 
   rbc_quitcounter = 0;
 
@@ -2113,13 +2127,14 @@ differences between the two buffers.  */)
 }
 
 static void
-set_bit (unsigned char *a, ptrdiff_t i)
+set_bit (struct context *ctx, unsigned char *a, ptrdiff_t i)
 {
   eassert (i >= 0);
   /* Micro-optimization: Casting to size_t generates much better
      code.  */
   size_t j = i;
   a[j / CHAR_BIT] |= (1 << (j % CHAR_BIT));
+  ctx->diffs++;
 }
 
 static bool
@@ -2228,7 +2243,7 @@ Both characters must have the same length of multi-byte form.  */)
     {
       len = CHAR_STRING (fromc, fromstr);
       if (CHAR_STRING (toc, tostr) != len)
-	error ("Characters in `subst-char-in-region' have different byte-lengths");
+	error ("Characters in `subst-char-in-region' have equal byte-lengths");
       if (!ASCII_CHAR_P (*tostr))
 	{
 	  /* If *TOSTR is in the range 0x80..0x9F and TOCHAR is not a
@@ -4443,6 +4458,12 @@ it to be non-nil.  */);
 #else
   binary_as_unsigned = true;
 #endif
+
+  DEFVAR_INT ("replace-buffer-contents-max-diffs",
+	      Vreplace_buffer_contents_max_diffs,
+	      doc: /* If there are more differences between the two buffers,
+`replace-buffer-contents' falls back to a plain delete and insert.  */);
+  Vreplace_buffer_contents_max_diffs = 100000;
 
   defsubr (&Spropertize);
   defsubr (&Schar_equal);
