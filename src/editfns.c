@@ -20,6 +20,7 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdio.h>
 
 #ifdef HAVE_PWD_H
@@ -438,7 +439,7 @@ find_field (Lisp_Object pos, Lisp_Object merge_at_boundary,
        ? get_char_property_and_overlay (make_fixnum (XFIXNUM (pos) - 1),
 					Qfield, Qnil, NULL)
        /* Using nil here would be a more obvious choice, but it would
-          fail when the buffer starts with a non-sticky field.  */
+	  fail when the buffer starts with a non-sticky field.  */
        : after_field);
 
   /* See if we need to handle the case where MERGE_AT_BOUNDARY is nil
@@ -646,24 +647,24 @@ Field boundaries are not noticed if `inhibit-field-text-motion' is non-nil.  */)
   if (NILP (Vinhibit_field_text_motion)
       && !EQ (new_pos, old_pos)
       && (!NILP (Fget_char_property (new_pos, Qfield, Qnil))
-          || !NILP (Fget_char_property (old_pos, Qfield, Qnil))
-          /* To recognize field boundaries, we must also look at the
-             previous positions; we could use `Fget_pos_property'
-             instead, but in itself that would fail inside non-sticky
-             fields (like comint prompts).  */
-          || (XFIXNAT (new_pos) > BEGV
-              && !NILP (Fget_char_property (prev_new, Qfield, Qnil)))
-          || (XFIXNAT (old_pos) > BEGV
-              && !NILP (Fget_char_property (prev_old, Qfield, Qnil))))
+	  || !NILP (Fget_char_property (old_pos, Qfield, Qnil))
+	  /* To recognize field boundaries, we must also look at the
+	     previous positions; we could use `Fget_pos_property'
+	     instead, but in itself that would fail inside non-sticky
+	     fields (like comint prompts).  */
+	  || (XFIXNAT (new_pos) > BEGV
+	      && !NILP (Fget_char_property (prev_new, Qfield, Qnil)))
+	  || (XFIXNAT (old_pos) > BEGV
+	      && !NILP (Fget_char_property (prev_old, Qfield, Qnil))))
       && (NILP (inhibit_capture_property)
-          /* Field boundaries are again a problem; but now we must
-             decide the case exactly, so we need to call
-             `get_pos_property' as well.  */
-          || (NILP (Fget_pos_property (old_pos, inhibit_capture_property, Qnil))
-              && (XFIXNAT (old_pos) <= BEGV
-                  || NILP (Fget_char_property
+	  /* Field boundaries are again a problem; but now we must
+	     decide the case exactly, so we need to call
+	     `get_pos_property' as well.  */
+	  || (NILP (Fget_pos_property (old_pos, inhibit_capture_property, Qnil))
+	      && (XFIXNAT (old_pos) <= BEGV
+		  || NILP (Fget_char_property
 			   (old_pos, inhibit_capture_property, Qnil))
-                  || NILP (Fget_char_property
+		  || NILP (Fget_char_property
 			   (prev_old, inhibit_capture_property, Qnil))))))
     /* It is possible that NEW_POS is not within the same field as
        OLD_POS; try to move NEW_POS so that it is.  */
@@ -677,9 +678,9 @@ Field boundaries are not noticed if `inhibit-field-text-motion' is non-nil.  */)
 	field_bound = Ffield_beginning (old_pos, escape_from_edge, new_pos);
 
       if (/* See if ESCAPE_FROM_EDGE caused FIELD_BOUND to jump to the
-             other side of NEW_POS, which would mean that NEW_POS is
-             already acceptable, and it's not necessary to constrain it
-             to FIELD_BOUND.  */
+	     other side of NEW_POS, which would mean that NEW_POS is
+	     already acceptable, and it's not necessary to constrain it
+	     to FIELD_BOUND.  */
 	  ((XFIXNAT (field_bound) < XFIXNAT (new_pos)) ? fwd : !fwd)
 	  /* NEW_POS should be constrained, but only if either
 	     ONLY_IN_LINE is nil (in which case any constraint is OK),
@@ -1049,7 +1050,7 @@ If POS is out of range, the value is nil.  */)
     {
       pos_byte = PT_BYTE;
       if (pos_byte < BEGV_BYTE || pos_byte >= ZV_BYTE)
-        return Qnil;
+	return Qnil;
     }
   else if (MARKERP (pos))
     {
@@ -1433,8 +1434,8 @@ usage: (insert-before-markers-and-inherit &rest ARGS)  */)
 
 DEFUN ("insert-char", Finsert_char, Sinsert_char, 1, 3,
        "(list (read-char-by-name \"Insert character (Unicode name or hex): \")\
-              (prefix-numeric-value current-prefix-arg)\
-              t))",
+	      (prefix-numeric-value current-prefix-arg)\
+	      t))",
        doc: /* Insert COUNT copies of CHARACTER.
 Interactively, prompt for CHARACTER.  You can specify CHARACTER in one
 of these ways:
@@ -1802,7 +1803,7 @@ determines whether case is significant or ignored.  */)
 
   if (!(BUF_BEGV (bp1) <= begp1
 	&& begp1 <= endp1
-        && endp1 <= BUF_ZV (bp1)))
+	&& endp1 <= BUF_ZV (bp1)))
     args_out_of_range (start1, end1);
 
   /* Likewise for second substring.  */
@@ -1840,7 +1841,7 @@ determines whether case is significant or ignored.  */)
 
   if (!(BUF_BEGV (bp2) <= begp2
 	&& begp2 <= endp2
-        && endp2 <= BUF_ZV (bp2)))
+	&& endp2 <= BUF_ZV (bp2)))
     args_out_of_range (start2, end2);
 
   i1 = begp1;
@@ -2020,6 +2021,11 @@ Otherwise it returns nil.  */)
   else
     CHECK_FIXNUM (max_costs);
 
+  message1 ("Calling compareseq...");
+  struct timeval tv_cmpseq_start, tv_cmpseq_end, tv_cmpseq_duration,
+    tv_repl_start, tv_repl_end, tv_repl_duration;
+  gettimeofday(&tv_cmpseq_start, NULL);
+
   /* Micro-optimization: Casting to size_t generates much better
      code.  */
   ptrdiff_t del_bytes = (size_t) size_a / CHAR_BIT + 1;
@@ -2041,16 +2047,28 @@ Otherwise it returns nil.  */)
   };
   memclear (ctx.deletions, del_bytes);
   memclear (ctx.insertions, ins_bytes);
+
   /* compareseq requires indices to be zero-based.  We add BEGV back
      later.  */
   bool early_abort = compareseq (0, size_a, 0, size_b, false, &ctx);
 
+  gettimeofday (&tv_cmpseq_end, NULL);
+  timersub (&tv_cmpseq_end, &tv_cmpseq_start, &tv_cmpseq_duration);
+
+  message ("compareseq returned %s after %d.%d secs and %d diffs",
+	   early_abort ? "early" : "normally",
+	   tv_cmpseq_duration.tv_sec, tv_cmpseq_duration.tv_usec,
+	   ctx.diffs);
+
+  gettimeofday (&tv_repl_start, NULL);
   if (early_abort)
     {
-      message1 ("compareseq returned early");
       del_range (min_a, ZV);
       Finsert_buffer_substring (source, Qnil,Qnil);
       SAFE_FREE_UNBIND_TO (count, Qnil);
+      gettimeofday (&tv_repl_end, NULL);
+      timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
+      message ("replacement took %d.%d secs", tv_cmpseq_duration.tv_sec, tv_repl_duration.tv_usec);
       return Qt;
     }
 
@@ -2083,37 +2101,38 @@ Otherwise it returns nil.  */)
       rarely_quit (++rbc_quitcounter);
 
       /* Check whether there is a change (insertion or deletion)
-         before the current position.  */
+	 before the current position.  */
       if ((i > 0 && bit_is_set (ctx.deletions, i - 1)) ||
-          (j > 0 && bit_is_set (ctx.insertions, j - 1)))
+	  (j > 0 && bit_is_set (ctx.insertions, j - 1)))
 	{
-          ptrdiff_t end_a = min_a + i;
-          ptrdiff_t end_b = min_b + j;
-          /* Find the beginning of the current change run.  */
+	  ptrdiff_t end_a = min_a + i;
+	  ptrdiff_t end_b = min_b + j;
+	  /* Find the beginning of the current change run.  */
 	  while (i > 0 && bit_is_set (ctx.deletions, i - 1))
-            --i;
+	    --i;
 	  while (j > 0 && bit_is_set (ctx.insertions, j - 1))
-            --j;
+	    --j;
 
 	  rarely_quit (rbc_quitcounter++);
 
-          ptrdiff_t beg_a = min_a + i;
-          ptrdiff_t beg_b = min_b + j;
-          eassert (beg_a <= end_a);
-          eassert (beg_b <= end_b);
-          eassert (beg_a < end_a || beg_b < end_b);
-          if (beg_a < end_a)
-            del_range (beg_a, end_a);
-          if (beg_b < end_b)
-            {
-              SET_PT (beg_a);
-              Finsert_buffer_substring (source, make_fixed_natnum (beg_b),
-                                        make_fixed_natnum (end_b));
-            }
+	  ptrdiff_t beg_a = min_a + i;
+	  ptrdiff_t beg_b = min_b + j;
+	  eassert (beg_a <= end_a);
+	  eassert (beg_b <= end_b);
+	  eassert (beg_a < end_a || beg_b < end_b);
+	  if (beg_a < end_a)
+	    del_range (beg_a, end_a);
+	  if (beg_b < end_b)
+	    {
+	      SET_PT (beg_a);
+	      Finsert_buffer_substring (source, make_fixed_natnum (beg_b),
+					make_fixed_natnum (end_b));
+	    }
 	}
       --i;
       --j;
     }
+
   SAFE_FREE_UNBIND_TO (count, Qnil);
   rbc_quitcounter = 0;
 
@@ -2122,6 +2141,10 @@ Otherwise it returns nil.  */)
       signal_after_change (BEGV, size_a, ZV - BEGV);
       update_compositions (BEGV, ZV, CHECK_INSIDE);
     }
+
+  gettimeofday (&tv_repl_end, NULL);
+  timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
+  message ("replacement took %d.%d secs", tv_cmpseq_duration.tv_sec, tv_repl_duration.tv_usec);
 
   return Qnil;
 }
@@ -2161,7 +2184,7 @@ bit_is_set (const unsigned char *a, ptrdiff_t i)
 
 static bool
 buffer_chars_equal (struct context *ctx,
-                    ptrdiff_t pos_a, ptrdiff_t pos_b)
+		    ptrdiff_t pos_a, ptrdiff_t pos_b)
 {
   pos_a += ctx->beg_a;
   pos_b += ctx->beg_b;
@@ -3155,7 +3178,7 @@ styled_format (ptrdiff_t nargs, Lisp_Object *args, bool message)
   while (format != end)
     {
       /* The values of N, ISPEC, and FORMAT when the loop body is
-         entered.  */
+	 entered.  */
       ptrdiff_t n0 = n;
       ptrdiff_t ispec0 = ispec;
       char *format0 = format;
@@ -3179,7 +3202,7 @@ styled_format (ptrdiff_t nargs, Lisp_Object *args, bool message)
 
 	     where
 
-             field-number ::= [0-9]+ '$'
+	     field-number ::= [0-9]+ '$'
 	     flags ::= [-+0# ]+
 	     field-width ::= [0-9]+
 	     precision ::= '.' [0-9]*
@@ -3702,7 +3725,7 @@ styled_format (ptrdiff_t nargs, Lisp_Object *args, bool message)
 		  if (incr != sprintf_bytes)
 		    {
 		      /* Move data to make room to insert spaces and '0's.
-		         As this may entail overlapping moves, process
+			 As this may entail overlapping moves, process
 			 the output right-to-left and use memmove.
 			 With any luck this code is rarely executed.  */
 		      char *src = p + sprintf_bytes;
@@ -3934,7 +3957,7 @@ styled_format (ptrdiff_t nargs, Lisp_Object *args, bool message)
 	      len = make_fixnum (SCHARS (info[i].argument));
 	      Lisp_Object new_len = make_fixnum (info[i].end - info[i].start);
 	      props = text_property_list (info[i].argument,
-                                          make_fixnum (0), len, Qnil);
+					  make_fixnum (0), len, Qnil);
 	      props = extend_property_ranges (props, len, new_len);
 	      /* If successive arguments have properties, be sure that
 		 the value of `composition' property be the copy.  */
@@ -4228,7 +4251,7 @@ ring.  */)
 
       /* First region smaller than second.  */
       if (len1_byte < len2_byte)
-        {
+	{
 	  temp = SAFE_ALLOCA (len2_byte);
 
 	  /* Don't precompute these addresses.  We have to compute them
@@ -4237,26 +4260,26 @@ ring.  */)
 	  start1_addr = BYTE_POS_ADDR (start1_byte);
 	  start2_addr = BYTE_POS_ADDR (start2_byte);
 
-          memcpy (temp, start2_addr, len2_byte);
-          memcpy (start1_addr + len2_byte, start1_addr, len1_byte);
-          memcpy (start1_addr, temp, len2_byte);
-        }
+	  memcpy (temp, start2_addr, len2_byte);
+	  memcpy (start1_addr + len2_byte, start1_addr, len1_byte);
+	  memcpy (start1_addr, temp, len2_byte);
+	}
       else
 	/* First region not smaller than second.  */
-        {
+	{
 	  temp = SAFE_ALLOCA (len1_byte);
 	  start1_addr = BYTE_POS_ADDR (start1_byte);
 	  start2_addr = BYTE_POS_ADDR (start2_byte);
-          memcpy (temp, start1_addr, len1_byte);
-          memcpy (start1_addr, start2_addr, len2_byte);
-          memcpy (start1_addr + len2_byte, temp, len1_byte);
-        }
+	  memcpy (temp, start1_addr, len1_byte);
+	  memcpy (start1_addr, start2_addr, len2_byte);
+	  memcpy (start1_addr + len2_byte, temp, len1_byte);
+	}
 
       SAFE_FREE ();
       graft_intervals_into_buffer (tmp_interval1, start1 + len2,
-                                   len1, current_buffer, 0);
+				   len1, current_buffer, 0);
       graft_intervals_into_buffer (tmp_interval2, start1,
-                                   len2, current_buffer, 0);
+				   len2, current_buffer, 0);
       update_compositions (start1, start1 + len2, CHECK_BORDER);
       update_compositions (start1 + len2, end2, CHECK_TAIL);
     }
@@ -4267,14 +4290,14 @@ ring.  */)
 
       if (len1_byte == len2_byte)
 	/* Regions are same size, though, how nice.  */
-        {
+	{
 	  USE_SAFE_ALLOCA;
 
-          modify_text (start1, end2);
-          record_change (start1, len1);
-          record_change (start2, len2);
-          tmp_interval1 = copy_intervals (cur_intv, start1, len1);
-          tmp_interval2 = copy_intervals (cur_intv, start2, len2);
+	  modify_text (start1, end2);
+	  record_change (start1, len1);
+	  record_change (start2, len2);
+	  tmp_interval1 = copy_intervals (cur_intv, start1, len1);
+	  tmp_interval2 = copy_intervals (cur_intv, start2, len2);
 
 	  tmp_interval3 = validate_interval_range (buf, &startr1, &endr1, 0);
 	  if (tmp_interval3)
@@ -4287,27 +4310,27 @@ ring.  */)
 	  temp = SAFE_ALLOCA (len1_byte);
 	  start1_addr = BYTE_POS_ADDR (start1_byte);
 	  start2_addr = BYTE_POS_ADDR (start2_byte);
-          memcpy (temp, start1_addr, len1_byte);
-          memcpy (start1_addr, start2_addr, len2_byte);
-          memcpy (start2_addr, temp, len1_byte);
+	  memcpy (temp, start1_addr, len1_byte);
+	  memcpy (start1_addr, start2_addr, len2_byte);
+	  memcpy (start2_addr, temp, len1_byte);
 	  SAFE_FREE ();
 
-          graft_intervals_into_buffer (tmp_interval1, start2,
-                                       len1, current_buffer, 0);
-          graft_intervals_into_buffer (tmp_interval2, start1,
-                                       len2, current_buffer, 0);
-        }
+	  graft_intervals_into_buffer (tmp_interval1, start2,
+				       len1, current_buffer, 0);
+	  graft_intervals_into_buffer (tmp_interval2, start1,
+				       len2, current_buffer, 0);
+	}
 
       else if (len1_byte < len2_byte)	/* Second region larger than first */
-        /* Non-adjacent & unequal size, area between must also be shifted.  */
-        {
+	/* Non-adjacent & unequal size, area between must also be shifted.  */
+	{
 	  USE_SAFE_ALLOCA;
 
-          modify_text (start1, end2);
-          record_change (start1, (end2 - start1));
-          tmp_interval1 = copy_intervals (cur_intv, start1, len1);
-          tmp_interval_mid = copy_intervals (cur_intv, end1, len_mid);
-          tmp_interval2 = copy_intervals (cur_intv, start2, len2);
+	  modify_text (start1, end2);
+	  record_change (start1, (end2 - start1));
+	  tmp_interval1 = copy_intervals (cur_intv, start1, len1);
+	  tmp_interval_mid = copy_intervals (cur_intv, end1, len_mid);
+	  tmp_interval2 = copy_intervals (cur_intv, start2, len2);
 
 	  tmp_interval3 = validate_interval_range (buf, &startr1, &endr2, 0);
 	  if (tmp_interval3)
@@ -4317,30 +4340,30 @@ ring.  */)
 	  temp = SAFE_ALLOCA (len2_byte);
 	  start1_addr = BYTE_POS_ADDR (start1_byte);
 	  start2_addr = BYTE_POS_ADDR (start2_byte);
-          memcpy (temp, start2_addr, len2_byte);
-          memcpy (start1_addr + len_mid + len2_byte, start1_addr, len1_byte);
-          memmove (start1_addr + len2_byte, start1_addr + len1_byte, len_mid);
-          memcpy (start1_addr, temp, len2_byte);
+	  memcpy (temp, start2_addr, len2_byte);
+	  memcpy (start1_addr + len_mid + len2_byte, start1_addr, len1_byte);
+	  memmove (start1_addr + len2_byte, start1_addr + len1_byte, len_mid);
+	  memcpy (start1_addr, temp, len2_byte);
 	  SAFE_FREE ();
 
-          graft_intervals_into_buffer (tmp_interval1, end2 - len1,
-                                       len1, current_buffer, 0);
-          graft_intervals_into_buffer (tmp_interval_mid, start1 + len2,
-                                       len_mid, current_buffer, 0);
-          graft_intervals_into_buffer (tmp_interval2, start1,
-                                       len2, current_buffer, 0);
-        }
+	  graft_intervals_into_buffer (tmp_interval1, end2 - len1,
+				       len1, current_buffer, 0);
+	  graft_intervals_into_buffer (tmp_interval_mid, start1 + len2,
+				       len_mid, current_buffer, 0);
+	  graft_intervals_into_buffer (tmp_interval2, start1,
+				       len2, current_buffer, 0);
+	}
       else
 	/* Second region smaller than first.  */
-        {
+	{
 	  USE_SAFE_ALLOCA;
 
-          record_change (start1, (end2 - start1));
-          modify_text (start1, end2);
+	  record_change (start1, (end2 - start1));
+	  modify_text (start1, end2);
 
-          tmp_interval1 = copy_intervals (cur_intv, start1, len1);
-          tmp_interval_mid = copy_intervals (cur_intv, end1, len_mid);
-          tmp_interval2 = copy_intervals (cur_intv, start2, len2);
+	  tmp_interval1 = copy_intervals (cur_intv, start1, len1);
+	  tmp_interval_mid = copy_intervals (cur_intv, end1, len_mid);
+	  tmp_interval2 = copy_intervals (cur_intv, start2, len2);
 
 	  tmp_interval3 = validate_interval_range (buf, &startr1, &endr2, 0);
 	  if (tmp_interval3)
@@ -4350,19 +4373,19 @@ ring.  */)
 	  temp = SAFE_ALLOCA (len1_byte);
 	  start1_addr = BYTE_POS_ADDR (start1_byte);
 	  start2_addr = BYTE_POS_ADDR (start2_byte);
-          memcpy (temp, start1_addr, len1_byte);
-          memcpy (start1_addr, start2_addr, len2_byte);
-          memmove (start1_addr + len2_byte, start1_addr + len1_byte, len_mid);
-          memcpy (start1_addr + len2_byte + len_mid, temp, len1_byte);
+	  memcpy (temp, start1_addr, len1_byte);
+	  memcpy (start1_addr, start2_addr, len2_byte);
+	  memmove (start1_addr + len2_byte, start1_addr + len1_byte, len_mid);
+	  memcpy (start1_addr + len2_byte + len_mid, temp, len1_byte);
 	  SAFE_FREE ();
 
-          graft_intervals_into_buffer (tmp_interval1, end2 - len1,
-                                       len1, current_buffer, 0);
-          graft_intervals_into_buffer (tmp_interval_mid, start1 + len2,
-                                       len_mid, current_buffer, 0);
-          graft_intervals_into_buffer (tmp_interval2, start1,
-                                       len2, current_buffer, 0);
-        }
+	  graft_intervals_into_buffer (tmp_interval1, end2 - len1,
+				       len1, current_buffer, 0);
+	  graft_intervals_into_buffer (tmp_interval_mid, start1 + len2,
+				       len_mid, current_buffer, 0);
+	  graft_intervals_into_buffer (tmp_interval2, start1,
+				       len2, current_buffer, 0);
+	}
 
       update_compositions (start1, start1 + len2, CHECK_BORDER);
       update_compositions (end2 - len1, end2, CHECK_BORDER);
