@@ -2068,7 +2068,7 @@ Otherwise it returns nil.  */)
       SAFE_FREE_UNBIND_TO (count, Qnil);
       gettimeofday (&tv_repl_end, NULL);
       timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
-      message ("replacement took %d.%d secs", tv_cmpseq_duration.tv_sec, tv_repl_duration.tv_usec);
+      message ("replacement took %d.%d secs", tv_repl_duration.tv_sec, tv_repl_duration.tv_usec);
       return Qt;
     }
 
@@ -2144,7 +2144,7 @@ Otherwise it returns nil.  */)
 
   gettimeofday (&tv_repl_end, NULL);
   timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
-  message ("replacement took %d.%d secs", tv_cmpseq_duration.tv_sec, tv_repl_duration.tv_usec);
+  message ("replacement took %d.%d secs", tv_repl_duration.tv_sec, tv_repl_duration.tv_usec);
 
   return Qnil;
 }
