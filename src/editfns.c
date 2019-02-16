@@ -1932,19 +1932,19 @@ static unsigned short rbc_quitcounter;
   bool a_unibyte;				\
   bool b_unibyte;				\
   /* Bit vectors recording for each character whether it was deleted
-     or inserted.  */                           \
-  unsigned char *deletions;                     \
-  unsigned char *insertions;                    \
-  struct timeval start;				\
-  double max_secs;                               \
+     or inserted.  */				\
+  unsigned char *deletions;			\
+  unsigned char *insertions;			\
+  struct timeval start;			\
+  double max_secs;				\
   unsigned int early_abort_tests;
 
-#define NOTE_DELETE(ctx, xoff) set_bit ((ctx), (ctx)->deletions, (xoff))
-#define NOTE_INSERT(ctx, yoff) set_bit ((ctx), (ctx)->insertions, (yoff))
+#define NOTE_DELETE(ctx, xoff) set_bit ((ctx)->deletions, (xoff))
+#define NOTE_INSERT(ctx, yoff) set_bit ((ctx)->insertions, (yoff))
 #define EARLY_ABORT(ctx) compareseq_early_abort (ctx)
 
 struct context;
-static void set_bit (struct context *, unsigned char *, OFFSET);
+static void set_bit (unsigned char *, OFFSET);
 static bool bit_is_set (const unsigned char *, OFFSET);
 static bool buffer_chars_equal (struct context *, OFFSET, OFFSET);
 static bool compareseq_early_abort (struct context *);
@@ -1968,7 +1968,7 @@ buffer stay intact.
 
 Because this function can be very slow if there's a large number of
 differences between the two buffers, it falls back to a plain delete
-and insert if the number of differences is higher than
+and insert if comparing the buffers takes longer than
 `replace-buffer-contents-max-secs'.  In this case, it returns t.
 Otherwise it returns nil.  */)
   (Lisp_Object source, Lisp_Object max_costs)
@@ -2149,7 +2149,7 @@ Otherwise it returns nil.  */)
 }
 
 static void
-set_bit (struct context *ctx, unsigned char *a, ptrdiff_t i)
+set_bit (unsigned char *a, ptrdiff_t i)
 {
   eassert (i >= 0);
   /* Micro-optimization: Casting to size_t generates much better
@@ -2277,7 +2277,7 @@ Both characters must have the same length of multi-byte form.  */)
     {
       len = CHAR_STRING (fromc, fromstr);
       if (CHAR_STRING (toc, tostr) != len)
-	error ("Characters in `subst-char-in-region' have equal byte-lengths");
+	error ("Characters in `subst-char-in-region' have different byte-lengths");
       if (!ASCII_CHAR_P (*tostr))
 	{
 	  /* If *TOSTR is in the range 0x80..0x9F and TOCHAR is not a
