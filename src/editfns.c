@@ -1935,16 +1935,19 @@ static unsigned short rbc_quitcounter;
      or inserted.  */                           \
   unsigned char *deletions;                     \
   unsigned char *insertions;                    \
-  unsigned int diffs;
+  struct timeval start;				\
+  double max_secs;                               \
+  unsigned int early_abort_tests;
 
 #define NOTE_DELETE(ctx, xoff) set_bit ((ctx), (ctx)->deletions, (xoff))
 #define NOTE_INSERT(ctx, yoff) set_bit ((ctx), (ctx)->insertions, (yoff))
-#define EARLY_ABORT(ctx) (ctx)->diffs > Vreplace_buffer_contents_max_diffs
+#define EARLY_ABORT(ctx) compareseq_early_abort (ctx)
 
 struct context;
 static void set_bit (struct context *, unsigned char *, OFFSET);
 static bool bit_is_set (const unsigned char *, OFFSET);
 static bool buffer_chars_equal (struct context *, OFFSET, OFFSET);
+static bool compareseq_early_abort (struct context *);
 
 #include "minmax.h"
 #include "diffseq.h"
@@ -1966,7 +1969,7 @@ buffer stay intact.
 Because this function can be very slow if there's a large number of
 differences between the two buffers, it falls back to a plain delete
 and insert if the number of differences is higher than
-`replace-buffer-contents-max-diffs'.  In this case, it returns t.
+`replace-buffer-contents-max-secs'.  In this case, it returns t.
 Otherwise it returns nil.  */)
   (Lisp_Object source, Lisp_Object max_costs)
 {
@@ -2021,9 +2024,11 @@ Otherwise it returns nil.  */)
   else
     CHECK_FIXNUM (max_costs);
 
-  message1 ("Calling compareseq...");
-  struct timeval tv_cmpseq_start, tv_cmpseq_end, tv_cmpseq_duration,
-    tv_repl_start, tv_repl_end, tv_repl_duration;
+  double max_secs = -1.0;
+  if (FLOATP (Vreplace_buffer_contents_max_secs))
+    max_secs = XFLOAT_DATA (Vreplace_buffer_contents_max_secs);
+
+  struct timeval tv_cmpseq_start, tv_cmpseq_end, tv_cmpseq_duration;
   gettimeofday(&tv_cmpseq_start, NULL);
 
   /* Micro-optimization: Casting to size_t generates much better
@@ -2043,32 +2048,30 @@ Otherwise it returns nil.  */)
     .bdiag = buffer + diags + size_b + 1,
     .heuristic = true,
     /* FIXME: Find a good number for .too_expensive.  */
-    .too_expensive = XFIXNUM (max_costs)
+    .too_expensive = XFIXNUM (max_costs),
+    .max_secs = max_secs,
+    .early_abort_tests = 0
   };
   memclear (ctx.deletions, del_bytes);
   memclear (ctx.insertions, ins_bytes);
 
   /* compareseq requires indices to be zero-based.  We add BEGV back
      later.  */
+  gettimeofday (&ctx.start, NULL);
   bool early_abort = compareseq (0, size_a, 0, size_b, false, &ctx);
 
   gettimeofday (&tv_cmpseq_end, NULL);
   timersub (&tv_cmpseq_end, &tv_cmpseq_start, &tv_cmpseq_duration);
-
-  message ("compareseq returned %s after %d.%d secs and %d diffs",
+  message ("compareseq returned %s after %d.%d secs and %d early_abort_tests.",
 	   early_abort ? "early" : "normally",
 	   tv_cmpseq_duration.tv_sec, tv_cmpseq_duration.tv_usec,
-	   ctx.diffs);
+	   ctx.early_abort_tests);
 
-  gettimeofday (&tv_repl_start, NULL);
   if (early_abort)
     {
       del_range (min_a, ZV);
       Finsert_buffer_substring (source, Qnil,Qnil);
       SAFE_FREE_UNBIND_TO (count, Qnil);
-      gettimeofday (&tv_repl_end, NULL);
-      timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
-      message ("replacement took %d.%d secs", tv_repl_duration.tv_sec, tv_repl_duration.tv_usec);
       return Qt;
     }
 
@@ -2142,10 +2145,6 @@ Otherwise it returns nil.  */)
       update_compositions (BEGV, ZV, CHECK_INSIDE);
     }
 
-  gettimeofday (&tv_repl_end, NULL);
-  timersub (&tv_repl_end, &tv_repl_start, &tv_repl_duration);
-  message ("replacement took %d.%d secs", tv_repl_duration.tv_sec, tv_repl_duration.tv_usec);
-
   return Qnil;
 }
 
@@ -2157,7 +2156,6 @@ set_bit (struct context *ctx, unsigned char *a, ptrdiff_t i)
      code.  */
   size_t j = i;
   a[j / CHAR_BIT] |= (1 << (j % CHAR_BIT));
-  ctx->diffs++;
 }
 
 static bool
@@ -2212,6 +2210,19 @@ buffer_chars_equal (struct context *ctx,
       == UNIBYTE_TO_CHAR (BUF_FETCH_BYTE (ctx->buffer_b, bpos_b));
   return BUF_FETCH_MULTIBYTE_CHAR (ctx->buffer_a, bpos_a)
     == BUF_FETCH_MULTIBYTE_CHAR (ctx->buffer_b, bpos_b);
+}
+
+static bool
+compareseq_early_abort (struct context *ctx)
+{
+  ctx->early_abort_tests++;
+  if (ctx->max_secs < 0.0)
+    return false;
+
+  struct timeval now, diff;
+  gettimeofday (&now, NULL);
+  timersub (&now, &ctx->start, &diff);
+  return diff.tv_sec + diff.tv_usec / 1000000.0 > ctx->max_secs;
 }
 
 
@@ -4482,11 +4493,11 @@ it to be non-nil.  */);
   binary_as_unsigned = true;
 #endif
 
-  DEFVAR_INT ("replace-buffer-contents-max-diffs",
-	      Vreplace_buffer_contents_max_diffs,
-	      doc: /* If there are more differences between the two buffers,
+  DEFVAR_LISP ("replace-buffer-contents-max-secs",
+	       Vreplace_buffer_contents_max_secs,
+	       doc: /* If differencing the two buffers takes longer than this,
 `replace-buffer-contents' falls back to a plain delete and insert.  */);
-  Vreplace_buffer_contents_max_diffs = 100000;
+  Vreplace_buffer_contents_max_secs = Qnil;
 
   defsubr (&Spropertize);
   defsubr (&Schar_equal);
